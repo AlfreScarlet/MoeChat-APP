@@ -46,6 +46,10 @@ class HomeController extends GetxController {
   // 是否正在接收 AI 回复（用于打断判断）
   final isReceivingResponse = false.obs;
 
+  // 音频延迟计时（记录发送请求到收到第一段音频的延迟）
+  DateTime? _requestSentTime;
+  bool _isFirstAudioFrame = false;
+
   // 资源管理状态
   final isCheckingAssets = false.obs;
   final isDownloadingAssets = false.obs;
@@ -529,6 +533,10 @@ class HomeController extends GetxController {
     isSending.value = true;
     isReceivingResponse.value = true;
 
+    // 记录请求发送时间，用于计算音频延迟
+    _requestSentTime = DateTime.now();
+    _isFirstAudioFrame = true;
+
     // 发送给服务端
     _socketService.sendText(text.trim());
   }
@@ -666,6 +674,19 @@ class HomeController extends GetxController {
   /// 处理音频帧
   void _handleAudioFrame(Uint8List? audioData) {
     if (audioData == null || audioData.isEmpty) return;
+
+    // 计算并输出第一段音频的延迟和具体时间
+    if (_isFirstAudioFrame && _requestSentTime != null) {
+      final receiveTime = DateTime.now();
+      final latency = receiveTime.difference(_requestSentTime!);
+      final reqTimeStr = _requestSentTime!.toIso8601String();
+      final recvTimeStr = receiveTime.toIso8601String();
+      debugPrint(
+        '⏱️ 音频延迟: ${latency.inMilliseconds} ms | 请求时间: $reqTimeStr | 收到时间: $recvTimeStr',
+      );
+      _isFirstAudioFrame = false;
+    }
+
     _audioService.enqueueAudio(audioData);
   }
 
@@ -697,6 +718,10 @@ class HomeController extends GetxController {
 
     isSending.value = true;
     isReceivingResponse.value = true;
+
+    // 记录请求发送时间（语音输入通过ASR发起），用于计算音频延迟
+    _requestSentTime = DateTime.now();
+    _isFirstAudioFrame = true;
   }
 
   /// 完成当前回复
