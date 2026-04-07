@@ -1,0 +1,79 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Source code files - force LF
+*.dart text eol=lf
+*.swift text eol=lf
+*.kt text eol=lf
+*.java text eol=lf
+*.cc text eol=lf
+*.h text eol=lf
+*.cpp text eol=lf
+*.c text eol=lf
+*.m text eol=lf
+
+# Config files - force LF
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.gradle text eol=lf
+*.properties text eol=lf
+*.plist text eol=lf
+
+# Web files - force LF
+*.html text eol=lf
+*.htm text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.jsx text eol=lf
+*.tsx text eol=lf
+
+# Scripts - force LF (important for shell scripts)
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Documentation - force LF
+*.md text eol=lf
+*.txt text eol=lf
+*.rst text eol=lf
+
+# CMake files
+*.cmake text eol=lf
+CMakeLists.txt text eol=lf
+
+# Binary files - do not treat as text
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.mp3 binary
+*.mp4 binary
+*.mov binary
+*.avi binary
+*.db binary
+
+# Flutter specific
+*.aot binary
+*.so binary
+*.dll binary
+*.dylib binary
+*.jar binary
+*.apk binary
+*.aab binary
+*.ipa binary
