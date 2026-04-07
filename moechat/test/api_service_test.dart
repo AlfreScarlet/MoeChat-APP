@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moechat/models/assistant.dart';
 import 'package:moechat/services/api_service.dart';
@@ -83,7 +85,7 @@ void main() {
         // 使用ApiService的私有方法通过反射测试
         // 实际测试通过API响应验证
         expect(json['name'], equals('Test酱'));
-        expect((json['settings'] as Map)?['contextLength'], equals(40));
+        expect((json['settings'] as Map)['contextLength'], equals(40));
       });
     });
 

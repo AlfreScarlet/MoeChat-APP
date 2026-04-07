@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
+
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
+import '../core/constants/buffer_constants.dart';
+import '../core/constants/delimiter_constants.dart';
+import '../core/constants/timeout_constants.dart';
+import '../core/errors/app_exception.dart';
+import '../core/errors/error_handler.dart';
 import 'recording_service.dart';
 
 /// Socket 连接状态
@@ -26,12 +31,13 @@ class SocketFrame {
 ///
 /// 协议格式：<|标签|>载荷<|end|>
 class SocketService extends GetxService {
-  static const String delimiter = '<|end|>';
-  static const String tagMe = '<|me|>';
-  static const String tagText = '<|text|>';
-  static const String tagComplete = '<|complete|>';
-  static const String tagStart = '<|start|>';
-  static const String tagAudio = '<|audio|>';
+  // Use constants from DelimiterConstants
+  static const String delimiter = DelimiterConstants.delimiter;
+  static const String tagMe = DelimiterConstants.tagMe;
+  static const String tagText = DelimiterConstants.tagText;
+  static const String tagComplete = DelimiterConstants.tagComplete;
+  static const String tagStart = DelimiterConstants.tagStart;
+  static const String tagAudio = DelimiterConstants.tagAudio;
 
   // ========== 状态 ==========
   final connectionState = SocketConnectionState.disconnected.obs;
@@ -49,16 +55,16 @@ class SocketService extends GetxService {
   List<int> _buffer = [];
   int _bufferOffset = 0;
 
-  // 缓冲区安全上限（1MB），防止异常数据导致内存无限增长
-  static const int _maxBufferSize = 1024 * 1024;
+  // 缓冲区安全上限，防止异常数据导致内存无限增长
+  static const int _maxBufferSize = BufferConstants.maxBufferSize;
 
   // 断线重连
   String? _lastHost;
   int? _lastPort;
   Timer? _reconnectTimer;
   int _reconnectAttempts = 0;
-  static const int _maxReconnectAttempts = 10;
-  static const Duration _baseReconnectDelay = Duration(seconds: 2);
+  static const int _maxReconnectAttempts = BufferConstants.maxReconnectAttempts;
+  static const Duration _baseReconnectDelay = BufferConstants.baseReconnectDelay;
   bool _intentionalDisconnect = false;
 
   /// 帧流，UI 层监听此流接收消息
@@ -84,11 +90,10 @@ class SocketService extends GetxService {
     lastError.value = null;
 
     try {
-      // 设置5秒超时
       _socket = await Socket.connect(
         host,
         port,
-        timeout: const Duration(seconds: 5),
+        timeout: TimeoutConstants.socketConnectionTimeout,
       );
       connectionState.value = SocketConnectionState.connected;
       _reconnectAttempts = 0;
@@ -147,7 +152,7 @@ class SocketService extends GetxService {
         _socket = await Socket.connect(
           _lastHost!,
           _lastPort!,
-          timeout: const Duration(seconds: 5),
+          timeout: TimeoutConstants.socketConnectionTimeout,
         );
         connectionState.value = SocketConnectionState.connected;
         _reconnectAttempts = 0;
@@ -194,7 +199,14 @@ class SocketService extends GetxService {
     final frame = '$tagMe$text$delimiter';
     try {
       _socket?.write(frame);
-    } catch (_) {}
+    } catch (e, st) {
+      // Log error instead of silently ignoring
+      ErrorHandler.handle(
+        SocketConnectionException.writeFailed(e),
+        context: 'sendText',
+        stackTrace: st,
+      );
+    }
   }
 
   // ========== 音频录制和发送（实时流式） ==========
@@ -305,8 +317,13 @@ class SocketService extends GetxService {
 
     try {
       _socket?.add(frame);
-    } catch (e) {
-      // socket 可能在写入瞬间被关闭，忽略
+    } catch (e, st) {
+      // Log error instead of silently ignoring
+      ErrorHandler.handle(
+        SocketConnectionException.writeFailed(e),
+        context: '_sendAudioFrame',
+        stackTrace: st,
+      );
     }
   }
 

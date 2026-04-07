@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
-import 'dart:typed_data';
+
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+
+import '../core/constants/default_value_constants.dart';
+import '../core/constants/timeout_constants.dart';
 import '../models/assistant.dart';
 
 /// HTTP API 服务 - 助手管理接口
@@ -19,9 +22,9 @@ class ApiService extends GetxService {
     _dio = dio.Dio(
       dio.BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 30), // 增加连接超时
-        receiveTimeout: const Duration(seconds: 60), // 增加接收超时
-        sendTimeout: const Duration(seconds: 30), // 添加发送超时
+        connectTimeout: TimeoutConstants.connectTimeout,
+        receiveTimeout: TimeoutConstants.receiveTimeout,
+        sendTimeout: TimeoutConstants.sendTimeout,
         headers: {'Content-Type': 'application/json'},
       ),
     );
@@ -448,27 +451,27 @@ class ApiService extends GetxService {
   FeatureSettings _parseFeatureSettings(Map<String, dynamic>? json) {
     if (json == null) {
       return const FeatureSettings(
-        contextLength: 40,
+        contextLength: DefaultValueConstants.contextLength,
         diary: false,
         diarySearchBoost: false,
-        diarySearchThreshold: 0.32,
+        diarySearchThreshold: DefaultValueConstants.diarySearchThreshold,
         coreMemory: false,
         worldBook: false,
-        worldBookThreshold: 0.5,
-        worldBookDepth: 3,
+        worldBookThreshold: DefaultValueConstants.worldBookThreshold,
+        worldBookDepth: DefaultValueConstants.worldBookDepth,
         emotionSystem: false,
         emotionPersist: false,
       );
     }
     return FeatureSettings(
-      contextLength: json['contextLength'] ?? 40,
+      contextLength: json['contextLength'] ?? DefaultValueConstants.contextLength,
       diary: json['enableLongMemory'] ?? false,
       diarySearchBoost: json['enableLongMemorySearchEnhance'] ?? false,
-      diarySearchThreshold: json['longMemoryThreshold']?.toDouble() ?? 0.32,
+      diarySearchThreshold: json['longMemoryThreshold']?.toDouble() ?? DefaultValueConstants.diarySearchThreshold,
       coreMemory: json['enableCoreMemory'] ?? false,
       worldBook: json['enableLoreBooks'] ?? false,
-      worldBookThreshold: json['loreBooksThreshold']?.toDouble() ?? 0.5,
-      worldBookDepth: json['loreBooksDepth'] ?? 3,
+      worldBookThreshold: json['loreBooksThreshold']?.toDouble() ?? DefaultValueConstants.worldBookThreshold,
+      worldBookDepth: json['loreBooksDepth'] ?? DefaultValueConstants.worldBookDepth,
       emotionSystem: json['enableEmotionSystem'] ?? false,
       emotionPersist: json['enableEmotionPersist'] ?? false,
     );
@@ -493,11 +496,11 @@ class ApiService extends GetxService {
   /// GsvSettings 转 JSON
   Map<String, dynamic> _gsvSettingsToJson(GsvSettings settings) {
     final json = <String, dynamic>{
-      'textLang': settings.textLang ?? 'zh',
-      'promptLang': settings.promptLang ?? 'zh',
-      'seed': settings.seed ?? -1,
-      'topK': settings.topK ?? 30,
-      'batchSize': settings.batchSize ?? 20,
+      'textLang': settings.textLang ?? DefaultValueConstants.defaultTextLang,
+      'promptLang': settings.promptLang ?? DefaultValueConstants.defaultPromptLang,
+      'seed': settings.seed ?? DefaultValueConstants.gsvSeed,
+      'topK': settings.topK ?? DefaultValueConstants.gsvTopK,
+      'batchSize': settings.batchSize ?? DefaultValueConstants.gsvBatchSize,
     };
 
     // 始终传递这些字段（空字符串表示清空）

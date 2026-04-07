@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moechat/services/socket_service.dart';

@@ -54,7 +54,7 @@ class ChatBubble extends StatelessWidget {
                 ? Image.network(
                     avatarUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
+                    errorBuilder: (_, _, _) =>
                         Image.asset('assets/logo1.png', fit: BoxFit.cover),
                   )
                 : Image.asset('assets/logo1.png', fit: BoxFit.cover),

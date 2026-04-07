@@ -49,11 +49,11 @@ class _PulsingDotState extends State<_PulsingDot>
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: AppTheme.danger.withOpacity(opacity),
+            color: AppTheme.danger.withValues(alpha: opacity),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppTheme.danger.withOpacity(0.4 * phase),
+                color: AppTheme.danger.withValues(alpha: 0.4 * phase),
                 blurRadius: 4,
                 spreadRadius: 1,
               ),
@@ -175,9 +175,9 @@ class ChatHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTheme.danger.withOpacity(0.1),
+        color: AppTheme.danger.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.danger.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.danger.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -199,7 +199,7 @@ class ChatHeader extends StatelessWidget {
           Container(
             width: 1,
             height: 12,
-            color: AppTheme.danger.withOpacity(0.3),
+            color: AppTheme.danger.withValues(alpha: 0.3),
           ),
           const SizedBox(width: 8),
           // 通话时长

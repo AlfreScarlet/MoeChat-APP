@@ -1,8 +1,10 @@
 import 'dart:async';
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:get/get.dart';
+
+import '../core/constants/audio_constants.dart';
 
 /// 音频播放器状态
 enum AudioPlayerState { idle, playing, paused, stopped, error }
@@ -33,9 +35,9 @@ class AudioService extends GetxService {
   bool _isInSession = false;
 
   // 音频参数 (与后端 TTS 保持一致)
-  static const int sampleRate = 32000; // 32kHz
-  static const int channels = 1; // mono
-  static const int bitsPerSample = 16; // 16bit
+  static const int sampleRate = AudioConstants.sampleRate;
+  static const int channels = AudioConstants.channels;
+  static const int bitsPerSample = AudioConstants.bitsPerSample;
 
   /// 初始化音频服务
   ///
@@ -206,7 +208,7 @@ class AudioService extends GetxService {
   /// 如果在淡出过程中再次调用，会立即停止并清理资源
   ///
   /// [fadeDuration] - 淡出时长，默认 200ms
-  void interrupt({Duration fadeDuration = const Duration(milliseconds: 200)}) {
+  void interrupt({Duration fadeDuration = AudioConstants.defaultFadeDuration}) {
     if (_soloud == null) return;
     if (!_isInSession && !isPlaying.value && !_isFadingOut) return;
 

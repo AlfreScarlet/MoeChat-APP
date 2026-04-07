@@ -374,7 +374,7 @@ class _SidebarAssistantItemState extends State<_SidebarAssistantItem> {
     return Image.network(
       avatarPath,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) =>
+      errorBuilder: (_, _, _) =>
           Image.asset('assets/logo1.png', fit: BoxFit.cover),
     );
   }
