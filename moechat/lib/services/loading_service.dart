@@ -4,16 +4,20 @@ import 'package:get/get.dart';
 import '../theme/app_theme.dart';
 
 /// 全局加载服务 - 管理加载状态和 Toast 提示
+/// 
+/// 使用 Get.dialog() 替代 OverlayEntry，从根本上消除竞态条件：
+/// - OverlayEntry 的 insert/remove 是异步操作，快速 show/hide 会导致状态不一致
+/// - Get.dialog() 是同步操作，由 GetX 内部堆栈管理，更加可靠
 class LoadingService extends GetxService {
   static LoadingService get to => Get.find();
 
-  // ==================== Loading ====================
+  // ==================== Loading (使用 Get.dialog) ====================
 
   final isLoading = false.obs;
   final loadingMessage = ''.obs;
   final canCancel = false.obs;
+  final _isDialogOpen = false.obs;
   VoidCallback? onCancelCallback;
-  OverlayEntry? _overlayEntry;
   final _cancelSignal = false.obs;
 
   void showLoading({
@@ -21,32 +25,60 @@ class LoadingService extends GetxService {
     bool showCancel = true,
     VoidCallback? onCancel,
   }) {
-    hideLoading();
+    // 如果已有对话框打开，先关闭它
+    if (_isDialogOpen.value) {
+      hideLoading();
+    }
+
     _cancelSignal.value = false;
     loadingMessage.value = message;
     isLoading.value = true;
     canCancel.value = showCancel;
     onCancelCallback = onCancel;
 
-    _overlayEntry = OverlayEntry(
-      builder: (context) => _LoadingOverlay(service: this),
-    );
-    final overlay = _getOverlay();
-    if (overlay != null) overlay.insert(_overlayEntry!);
+    // 使用 Get.dialog 替代 OverlayEntry，同步操作避免竞态条件
+    _isDialogOpen.value = true;
+    Get.dialog(
+      _LoadingDialog(service: this),
+      barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      transitionDuration: Duration.zero, // 无动画，立即显示
+      useSafeArea: false,
+    ).then((_) {
+      // dialog 关闭时更新状态（无论是调用 Get.back() 还是其他方式关闭）
+      _isDialogOpen.value = false;
+    });
   }
 
   void hideLoading() {
-    final entry = _overlayEntry;
-    _overlayEntry = null;
-    if (entry != null && entry.mounted) entry.remove();
+    // 只有当对话框确实打开时才调用 Get.back()
+    // 避免误关闭其他对话框（如 SettingsModal）
+    if (_isDialogOpen.value && Get.isDialogOpen == true) {
+      Get.back();
+    }
+    _isDialogOpen.value = false;
     isLoading.value = false;
     loadingMessage.value = '';
     canCancel.value = false;
     onCancelCallback = null;
   }
 
-  void forceHideAll() {
+  /// 异步隐藏 loading（兼容旧代码）
+  Future<void> hideLoadingAsync() async {
     hideLoading();
+    // 延迟一帧确保状态更新
+    await Future.delayed(Duration.zero);
+  }
+
+  void forceHideAll() {
+    if (_isDialogOpen.value && Get.isDialogOpen == true) {
+      Get.back();
+    }
+    _isDialogOpen.value = false;
+    isLoading.value = false;
+    loadingMessage.value = '';
+    canCancel.value = false;
+    onCancelCallback = null;
     _cancelSignal.value = false;
     _clearAllToasts();
   }
@@ -64,9 +96,12 @@ class LoadingService extends GetxService {
     callback?.call();
   }
 
-  // ==================== Toast ====================
+  // ==================== Toast (保留 OverlayEntry 实现) ====================
 
-  /// 每个 toast 独立一个 OverlayEntry，避免共享状态导致的生命周期问题
+  /// Toast 保持使用 OverlayEntry，因为：
+  /// - Toast 显示时间较长（3-4秒），没有快速 show/hide 问题
+  /// - 需要支持多个 Toast 同时显示（堆叠效果）
+  /// - Get.dialog 同一时间只能显示一个对话框
   final List<_ToastEntry> _activeToasts = [];
   static const int _maxToasts = 3;
 
@@ -170,17 +205,29 @@ class LoadingService extends GetxService {
     _activeToasts.clear();
   }
 
-  // ==================== Overlay 获取 ====================
+  // ==================== Overlay 获取 (仅用于 Toast) ====================
 
   OverlayState? _getOverlay() {
-    try {
-      final nav = Get.key.currentState;
-      if (nav != null) return nav.overlay;
-    } catch (_) {}
-    try {
-      final ctx = Get.overlayContext ?? Get.context;
-      if (ctx != null) return Overlay.maybeOf(ctx);
-    } catch (_) {}
+    // 尝试多种方式获取 overlay，增加容错
+    for (int i = 0; i < 3; i++) {
+      try {
+        final nav = Get.key.currentState;
+        if (nav?.overlay != null) return nav!.overlay;
+      } catch (_) {}
+
+      try {
+        final ctx = Get.overlayContext ?? Get.context;
+        if (ctx != null) {
+          final overlay = Overlay.maybeOf(ctx);
+          if (overlay != null) return overlay;
+        }
+      } catch (_) {}
+
+      // 如果不是最后一次尝试，短暂延迟后重试
+      if (i < 2) {
+        continue;
+      }
+    }
     return null;
   }
 
@@ -224,67 +271,73 @@ class _ToastEntry {
   _ToastEntry({required this.overlayEntry});
 }
 
-// ==================== Loading Overlay ====================
+// ==================== Loading Dialog (使用 Get.dialog) ====================
 
-class _LoadingOverlay extends StatelessWidget {
+class _LoadingDialog extends StatelessWidget {
   final LoadingService service;
-  const _LoadingOverlay({required this.service});
+
+  const _LoadingDialog({required this.service});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black.withValues(alpha: 0.3),
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 20,
-                spreadRadius: 5,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(
-                width: 40,
-                height: 40,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
+    return PopScope(
+      canPop: false, // 阻止返回键关闭
+      child: Material(
+        color: Colors.transparent,
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  spreadRadius: 5,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Obx(
-                () => Text(
-                  service.loadingMessage.value,
-                  style: AppTheme.cjkStyle(
-                    fontSize: 14,
-                    color: AppTheme.textSecondary,
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Obx(
-                () => service.canCancel.value
-                    ? TextButton(
-                        onPressed: service._onCancel,
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppTheme.textSecondary,
-                        ),
-                        child: Text(
-                          '取消',
-                          style: AppTheme.cjkStyle(fontSize: 13),
-                        ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
+                const SizedBox(height: 16),
+                Obx(
+                  () => Text(
+                    service.loadingMessage.value.isEmpty
+                        ? '加载中...'
+                        : service.loadingMessage.value,
+                    style: AppTheme.cjkStyle(
+                      fontSize: 14,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Obx(
+                  () => service.canCancel.value
+                      ? TextButton(
+                          onPressed: service._onCancel,
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppTheme.textSecondary,
+                          ),
+                          child: Text(
+                            '取消',
+                            style: AppTheme.cjkStyle(fontSize: 13),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
           ),
         ),
       ),

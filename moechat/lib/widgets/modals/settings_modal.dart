@@ -83,8 +83,12 @@ class _SettingsModalState extends State<SettingsModal>
       );
 
       // 连接成功才关闭对话框
-      if (success) {
-        Get.back();
+      if (success && mounted) {
+        // 延迟关闭，确保 loading 和 toast 完全处理完毕
+        await Future.delayed(const Duration(milliseconds: 200));
+        if (mounted && Navigator.of(context).canPop()) {
+          Get.back();
+        }
       }
       // 失败时不关闭，让用户可以修改地址重试
     } finally {

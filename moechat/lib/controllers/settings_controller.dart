@@ -138,10 +138,13 @@ class SettingsController extends GetxController {
       // 连接成功，隐藏加载对话框
       LoadingService.to.hideLoading();
 
+      // 添加延迟确保 overlay 完全移除，避免与后续 loading 冲突
+      await Future.delayed(const Duration(milliseconds: 100));
+
       if (apiSuccess && !isCancelled) {
         LoadingService.to.showSuccess('连接成功');
-        // 加载助手列表
-        await Get.find<HomeController>().loadAssistants();
+        // 加载助手列表（静默模式，避免双重 loading 导致卡住）
+        await Get.find<HomeController>().loadAssistants(silent: true);
       }
 
       return apiSuccess && !isCancelled;
