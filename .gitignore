@@ -557,6 +557,7 @@ kubeconfig
 # Core dumps
 core
 core.*
+# !**/lib/core
 
 # Debug files
 *.dSYM/
