@@ -9,7 +9,7 @@ void main() {
     setUp(() {
       apiService = ApiService();
       // 使用测试服务器
-      apiService.initialize('http://fgs6.bakamoe.com:9091/api');
+      apiService.initialize('http://127.0.0.1:8001/api');
     });
 
     test('ApiService should be initialized', () {

@@ -47,7 +47,7 @@ void main() {
 
     test('Connection test to server', () async {
       // 连接到测试服务器
-      await socketService.connect('fgs6.bakamoe.com', 9092);
+      await socketService.connect('127.0.0.1', 8002);
       
       // 验证连接状态
       expect(socketService.isConnected, isTrue);
