@@ -1,0 +1,593 @@
+# =============================================================================
+# COMPREHENSIVE .gitignore
+# Modern Multi-Stack Software Project
+# =============================================================================
+
+.kilo
+*.claude
+*.kiro
+*.vscode
+
+# =============================================================================
+# OPERATING SYSTEM FILES
+# =============================================================================
+
+# ----------------------------------------
+# macOS
+# ----------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ----------------------------------------
+# Windows
+# ----------------------------------------
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# ----------------------------------------
+# Linux
+# ----------------------------------------
+*~
+.nfs*
+
+# =============================================================================
+# IDE AND EDITOR CONFIGURATIONS
+# =============================================================================
+
+# ----------------------------------------
+# VS Code
+# ----------------------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+*.code-workspace
+.history/
+
+# ----------------------------------------
+# JetBrains (IntelliJ, WebStorm, PyCharm, etc.)
+# ----------------------------------------
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# ----------------------------------------
+# Visual Studio
+# ----------------------------------------
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ----------------------------------------
+# Vim
+# ----------------------------------------
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+
+# ----------------------------------------
+# Emacs
+# ----------------------------------------
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ----------------------------------------
+# Sublime Text
+# ----------------------------------------
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
+# ----------------------------------------
+# Eclipse
+# ----------------------------------------
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+
+# ----------------------------------------
+# NetBeans
+# ----------------------------------------
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ----------------------------------------
+# Xcode
+# ----------------------------------------
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+
+# =============================================================================
+# VERSION CONTROL ARTIFACTS
+# =============================================================================
+*.orig
+*.rej
+.svn/
+.hg/
+.bzr/
+
+# =============================================================================
+# DEPENDENCY DIRECTORIES
+# =============================================================================
+
+# ----------------------------------------
+# Node.js
+# ----------------------------------------
+node_modules/
+jspm_packages/
+.npm
+.eslintcache
+.node_repl_history
+.yarn-integrity
+
+# ----------------------------------------
+# Ruby / Bundler
+# ----------------------------------------
+vendor/
+vendor/bundle
+.bundle/
+
+# ----------------------------------------
+# Python
+# ----------------------------------------
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+
+# ----------------------------------------
+# PHP / Composer
+# ----------------------------------------
+vendor/
+
+# ----------------------------------------
+# Go
+# ----------------------------------------
+vendor/
+
+# ----------------------------------------
+# Rust
+# ----------------------------------------
+target/
+Cargo.lock  # Library projects should ignore; application projects may include
+
+# ----------------------------------------
+# Java / Maven / Gradle
+# ----------------------------------------
+target/
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+.gradle
+build/
+
+# =============================================================================
+# BUILD OUTPUTS AND COMPILED FILES
+# =============================================================================
+
+# General build directories
+dist/
+build/
+out/
+*.out
+*.app
+*.exe
+*.dll
+*.so
+*.dylib
+*.class
+*.pyc
+*.pyo
+*.pyd
+
+# Webpack / Vite / Rollup / Parcel
+.cache/
+.parcel-cache/
+.nuxt/
+.nitro/
+.output/
+
+# TypeScript
+*.tsbuildinfo
+
+# =============================================================================
+# LOGS AND DATABASES
+# =============================================================================
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.rdb
+*.aof
+
+# =============================================================================
+# ENVIRONMENT AND SECRET FILES
+# =============================================================================
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.development
+.env.test
+.env.production
+.env.staging
+
+# Secrets and credentials
+secrets.*
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# AWS
+.aws/
+
+# Docker
+.env.docker
+
+# =============================================================================
+# TESTING AND COVERAGE OUTPUTS
+# =============================================================================
+coverage/
+.nyc_output/
+*.lcov
+
+# Python testing
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*$py.class
+.tox/
+.nox/
+.hypothesis/
+
+# Jest
+jest-coverage/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# =============================================================================
+# PACKAGE MANAGER FILES
+# =============================================================================
+
+# ----------------------------------------
+# npm / yarn / pnpm
+# ----------------------------------------
+# Lock files - COMMIT for applications, IGNORE for libraries
+# Uncomment the appropriate lines based on your project type:
+
+# For APPLICATIONS (recommended: commit lock files):
+# (Keep package-lock.json, yarn.lock, pnpm-lock.yaml committed)
+
+# For LIBRARIES (recommended: ignore lock files):
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ----------------------------------------
+# Python
+# ----------------------------------------
+# Pipfile.lock - COMMIT for applications, IGNORE for libraries
+# Uncomment for libraries:
+# Pipfile.lock
+
+# Poetry
+poetry.lock  # COMMIT for applications
+
+# ----------------------------------------
+# Ruby
+# ----------------------------------------
+# Gemfile.lock - COMMIT for applications, IGNORE for gems
+
+# ----------------------------------------
+# PHP
+# ----------------------------------------
+composer.lock  # COMMIT for applications, IGNORE for libraries
+
+# =============================================================================
+# TEMPORARY AND CACHE FILES
+# =============================================================================
+.cache/
+.tmp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS temp files
+*.~vsd
+*.~vsdx
+~$*
+
+# =============================================================================
+# FRAMEWORK-SPECIFIC EXCLUSIONS
+# =============================================================================
+
+# ----------------------------------------
+# React / Next.js
+# ----------------------------------------
+.next/
+.vercel/
+
+# ----------------------------------------
+# Vue
+# ----------------------------------------
+.vuepress/dist
+.vuepress/.temp
+.vuepress/.cache
+dist-ssr
+*.local
+
+# ----------------------------------------
+# Angular
+# ----------------------------------------
+.angular/
+
+# ----------------------------------------
+# Svelte
+# ----------------------------------------
+.svelte-kit/
+
+# ----------------------------------------
+# Django
+# ----------------------------------------
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# ----------------------------------------
+# Flask
+# ----------------------------------------
+instance/
+.webassets-cache
+
+# ----------------------------------------
+# Ruby on Rails
+# ----------------------------------------
+*.rbc
+capybara-*.html
+.rspec
+/db/*.sqlite3
+/db/*.sqlite3-*
+/public/system
+/coverage/
+/spec/tmp
+**.orig
+rerun.txt
+pickle-email-*.html
+
+# Ignore uploaded files in development
+/storage/*
+!/storage/.keep
+
+# ----------------------------------------
+# Laravel
+# ----------------------------------------
+/vendor/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+.env.backup
+.env.production
+Homestead.yaml
+Homestead.json
+/.vagrant
+.phpunit.result.cache
+
+# ----------------------------------------
+# Spring Boot
+# ----------------------------------------
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ----------------------------------------
+# ASP.NET Core
+# ----------------------------------------
+**/Properties/launchSettings.json
+
+# ----------------------------------------
+# Flutter
+# ----------------------------------------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# ----------------------------------------
+# Unity
+# ----------------------------------------
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+
+# ----------------------------------------
+# Gatsby
+# ----------------------------------------
+.cache/
+public/
+
+# ----------------------------------------
+# Hexo
+# ----------------------------------------
+.deploy*/
+
+# ----------------------------------------
+# Hugo
+# ----------------------------------------
+/public/
+/resources/_gen/
+
+# ----------------------------------------
+# MkDocs
+# ----------------------------------------
+site/
+
+# =============================================================================
+# DEPLOYMENT AND CI/CD
+# =============================================================================
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# Serverless
+.serverless/
+
+# Firebase
+.firebase/
+
+# Heroku
+.env.heroku
+
+# =============================================================================
+# MISCELLANEOUS
+# =============================================================================
+
+# Backup files
+*.bak
+*.gho
+*.ori
+*.orig
+*.tmp
+
+# Crash dumps
+*.pid
+*.seed
+*.pid.lock
+*.stackdump
+
+# Core dumps
+core
+core.*
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Anaconda
+conda-env/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# Cython
+*.cython_cache/
+
+# Temporary folders created by various tools
+temp/
+tmp/

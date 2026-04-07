@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoeChat Desktop</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- 左侧边栏：助手列表 -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="app-title">MoeChat</span>
+      <button class="icon-btn" id="addAssistantBtn" title="添加助手">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      </button>
+    </div>
+
+    <div class="assistant-list" id="assistantList">
+      <!-- 助手项 -->
+      <div class="assistant-item active">
+        <img src="../logo1.png" class="assistant-avatar" alt="" />
+        <div class="assistant-meta">
+          <span class="assistant-name">Chat酱</span>
+          <span class="assistant-desc">活泼开朗的AI助手</span>
+        </div>
+      </div>
+      <div class="assistant-item">
+        <img src="../logo2.png" class="assistant-avatar" alt="" />
+        <div class="assistant-meta">
+          <span class="assistant-name">小雪</span>
+          <span class="assistant-desc">安静内敛，喜欢读书</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <button class="sidebar-action" id="settingsBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 000-1.88l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a7.04 7.04 0 00-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84a.48.48 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58a7.07 7.07 0 000 1.88l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.6 3.6 0 0112 15.6z"/></svg>
+        <span>设置</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- 中间：聊天主区域 -->
+  <main class="chat-main">
+    <header class="chat-header">
+      <div class="chat-header-info">
+        <img src="../logo1.png" class="chat-header-avatar" alt="" />
+        <div>
+          <span class="chat-header-name">Chat酱</span>
+          <span class="chat-header-status">在线</span>
+        </div>
+      </div>
+      <div class="chat-header-actions">
+        <button class="icon-btn" id="detailToggleBtn" title="助手详情">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="chat-messages" id="chatMessages">
+      <!-- 助手开场白 -->
+      <div class="message bot">
+        <img src="../logo1.png" class="msg-avatar" alt="" />
+        <div class="msg-bubble">你好呀~ 今天想聊些什么呢？😊</div>
+      </div>
+      <div class="message user">
+        <div class="msg-bubble">你好！给我介绍一下你自己吧</div>
+      </div>
+      <div class="message bot">
+        <img src="../logo1.png" class="msg-avatar" alt="" />
+        <div class="msg-bubble">我是Chat酱！一个活泼开朗的AI助手～我的生日是1月1日，平时最喜欢和大家聊天啦！有什么想问的尽管说哦～ ✨</div>
+      </div>
+      <div class="message user">
+        <div class="msg-bubble">你有什么特长吗？</div>
+      </div>
+      <div class="message bot typing">
+        <img src="../logo1.png" class="msg-avatar" alt="" />
+        <div class="msg-bubble">
+          <div class="typing-indicator"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <button class="call-btn" id="callBtn" title="语音通话模式">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01l-2.2 2.2z"/></svg>
+      </button>
+      <input type="text" class="chat-input" placeholder="输入消息..." />
+      <button class="send-btn" title="发送">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- 右侧：助手详情面板 -->
+  <aside class="detail-panel open" id="detailPanel">
+    <!-- 封面区：完整头像 + 渐变遮罩 + 名称浮层 -->
+    <div class="detail-cover">
+      <img src="../logo1.png" class="detail-cover-img" alt="" />
+      <div class="detail-cover-overlay"></div>
+      <button class="icon-btn detail-close-float" id="detailCloseBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+      <div class="detail-cover-info">
+        <h2 class="detail-name">Chat酱</h2>
+        <span class="detail-tag"><span class="tag-dot"></span>当前使用中</span>
+      </div>
+    </div>
+
+    <div class="detail-body">
+      <!-- 基础属性 -->
+      <div class="stat-cards">
+        <div class="stat-card">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 16H5V9h14v11z"/></svg>
+          <span class="stat-val">1月1日</span>
+          <span class="stat-label">生日</span>
+        </div>
+        <div class="stat-card">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M13 6.99h3L12 3 8 6.99h3v10.02H8L12 21l4-3.99h-3z"/></svg>
+          <span class="stat-val">165cm</span>
+          <span class="stat-label">身高</span>
+        </div>
+        <div class="stat-card">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 3a4 4 0 014 4c0 .73-.2 1.41-.54 2H18a2 2 0 012 2v2a3 3 0 01-2 2.82V18a2 2 0 01-2 2H8a2 2 0 01-2-2v-2.18A3 3 0 014 13v-2a2 2 0 012-2h2.54A3.96 3.96 0 018 7a4 4 0 014-4z"/></svg>
+          <span class="stat-val">48kg</span>
+          <span class="stat-label">体重</span>
+        </div>
+      </div>
+
+      <!-- 状态 -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <span>状态</span>
+        </div>
+        <div class="kv-list">
+          <div class="kv-item">
+            <span class="kv-key">好感度</span>
+            <div class="love-bar-wrap">
+              <div class="love-bar" style="width:50%"></div>
+              <span class="love-val">50</span>
+            </div>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">初次相遇</span>
+            <span class="kv-val mono">2025-05-03</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">最后更新</span>
+            <span class="kv-val mono">2026-04-04</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 角色设定 (description) -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/></svg>
+          <span>角色设定</span>
+        </div>
+        <div class="prompt-block">一个可爱的AI助手，喜欢和大家聊天，总是充满活力。</div>
+      </div>
+
+      <!-- 性格特点 (personality) -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <span>性格特点</span>
+        </div>
+        <div class="prompt-block">活泼开朗，喜欢用可爱的语气说话，经常使用颜文字和emoji表情。</div>
+      </div>
+
+      <!-- 用户设定 (mask) -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v2h20v-2c0-3.3-6.7-5-10-5z"/></svg>
+          <span>用户设定</span>
+        </div>
+        <div class="prompt-block empty">未设置</div>
+      </div>
+
+      <!-- 自定义提示词 (customPrompt) -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+          <span>自定义提示词</span>
+        </div>
+        <div class="prompt-block">你是一个可爱的AI助手，说话风格活泼，喜欢用颜文字和emoji。</div>
+      </div>
+
+      <!-- 对话案例 (messageExamples) -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg>
+          <span>对话案例</span>
+        </div>
+        <div class="greeting-list">
+          <div class="greeting-item">🗨️ 你好呀，主人~今天也要元气满满哦！</div>
+          <div class="greeting-item">🗨️ 嘿嘿，想我了吗？(◕ᴗ◕✿)</div>
+        </div>
+      </div>
+
+      <!-- 额外描述 (extraDescription) -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V5h14v14zM7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z"/></svg>
+          <span>额外描述</span>
+        </div>
+        <p class="detail-desc">喜欢在聊天中使用可爱的表情，会根据心情变换不同的表情包。</p>
+      </div>
+
+      <!-- 开场白 (startWith) -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+          <span>开场白</span>
+        </div>
+        <div class="greeting-list">
+          <div class="greeting-item">💬 你好呀~</div>
+          <div class="greeting-item">💬 今天过得怎么样？</div>
+        </div>
+      </div>
+
+      <!-- GSV 语音设置 -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8.5v7a4.47 4.47 0 002.5-3.5zM14 3.23v2.06a6.51 6.51 0 010 13.42v2.06A8.51 8.51 0 0014 3.23z"/></svg>
+          <span>语音设置 (GSV)</span>
+        </div>
+        <div class="kv-list">
+          <div class="kv-item">
+            <span class="kv-key">textLang</span>
+            <span class="kv-val mono">zh</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">gptModelPath</span>
+            <span class="kv-val mono">models/gpt.ckpt</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">sovitsModelPath</span>
+            <span class="kv-val mono">models/sovits.pth</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">refAudioPath</span>
+            <span class="kv-val mono">audio/ref.wav</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">promptText</span>
+            <span class="kv-val mono">你好呀</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">promptLang</span>
+            <span class="kv-val mono">zh</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">seed</span>
+            <span class="kv-val mono">-1</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">topK</span>
+            <span class="kv-val mono">30</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">batchSize</span>
+            <span class="kv-val mono">20</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">text_split_method</span>
+            <span class="kv-val mono">cut0</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">extraRefAudio</span>
+            <span class="kv-val muted">未设置</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 助手功能设置 (AssistantSettings) -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 000-1.88l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a7.04 7.04 0 00-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84a.48.48 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58a7.07 7.07 0 000 1.88l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.6 3.6 0 0112 15.6z"/></svg>
+          <span>功能设置</span>
+        </div>
+        <div class="kv-list">
+          <div class="kv-item">
+            <span class="kv-key">上下文长度</span>
+            <span class="kv-val mono">40</span>
+          </div>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-item">
+            <span>日记（长期记忆）</span>
+            <span class="toggle-badge on">开启</span>
+          </div>
+          <div class="toggle-item">
+            <span>日记检索加强</span>
+            <span class="toggle-badge on">开启</span>
+          </div>
+          <div class="toggle-item sub">
+            <span>搜索阈值</span>
+            <span class="kv-val mono">0.38</span>
+          </div>
+          <div class="toggle-item">
+            <span>核心记忆</span>
+            <span class="toggle-badge on">开启</span>
+          </div>
+          <div class="toggle-item">
+            <span>世界书（知识库）</span>
+            <span class="toggle-badge on">开启</span>
+          </div>
+          <div class="toggle-item sub">
+            <span>搜索阈值</span>
+            <span class="kv-val mono">0.5</span>
+          </div>
+          <div class="toggle-item sub">
+            <span>搜索深度</span>
+            <span class="kv-val mono">3</span>
+          </div>
+          <div class="toggle-item">
+            <span>情绪系统</span>
+            <span class="toggle-badge off">关闭</span>
+          </div>
+          <div class="toggle-item sub">
+            <span>情绪持续存储</span>
+            <span class="toggle-badge off">关闭</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 情绪设置 -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-4-8c.78 0 1.41-.63 1.41-1.41S8.78 9.18 8 9.18s-1.41.63-1.41 1.41S7.22 12 8 12zm8 0c.78 0 1.41-.63 1.41-1.41S16.78 9.18 16 9.18s-1.41.63-1.41 1.41S15.22 12 16 12zm-4 5.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
+          <span>情绪设置</span>
+        </div>
+        <div class="kv-list">
+          <div class="kv-item">
+            <span class="kv-val muted">未配置</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 资源文件 -->
+      <div class="detail-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M20 6h-8l-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z"/></svg>
+          <span>资源文件</span>
+        </div>
+        <div class="assets-card">
+          <div class="assets-info">
+            <span class="assets-dot green"></span>
+            <span>已是最新版本</span>
+          </div>
+          <div class="assets-btns">
+            <button class="assets-btn" title="检查更新">
+              <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0012 4a8 8 0 108 8h-2a6 6 0 11-1.76-4.24l-2.83 2.83H20V4l-2.35 2.35z"/></svg>
+            </button>
+            <button class="assets-btn" title="下载">
+              <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            </button>
+            <button class="assets-btn" title="上传">
+              <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="detail-actions">
+        <button class="btn btn-primary btn-block">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          编辑助手
+        </button>
+        <button class="btn btn-danger-outline btn-block">删除助手</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== 添加/编辑助手弹窗 ===== -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>添加助手</h3>
+        <button class="icon-btn modal-close-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>名称 <span class="req">*</span></label>
+            <input type="text" placeholder="助手名称" />
+          </div>
+          <div class="form-group">
+            <label>头像 <span class="req">*</span></label>
+            <input type="text" placeholder="avatar.png" />
+          </div>
+        </div>
+        <div class="form-row three">
+          <div class="form-group">
+            <label>生日 <span class="req">*</span></label>
+            <input type="text" placeholder="1月1日" />
+          </div>
+          <div class="form-group">
+            <label>身高 <span class="req">*</span></label>
+            <input type="text" placeholder="165" />
+          </div>
+          <div class="form-group">
+            <label>体重 <span class="req">*</span></label>
+            <input type="text" placeholder="48kg" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>性格 <span class="req">*</span></label>
+          <input type="text" placeholder="活泼开朗" />
+        </div>
+        <div class="form-group">
+          <label>描述 <span class="req">*</span></label>
+          <textarea rows="2" placeholder="助手的描述信息"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>对用户的称呼</label>
+            <input type="text" placeholder="阁下" />
+          </div>
+          <div class="form-group">
+            <label>用户设定</label>
+            <input type="text" placeholder="可选" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>自定义提示词</label>
+          <textarea rows="2" placeholder="可选"></textarea>
+        </div>
+        <div class="form-group">
+          <label>开场白（每行一条）</label>
+          <textarea rows="2" placeholder="你好呀~&#10;今天过得怎么样？"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost">取消</button>
+        <button class="btn btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 设置弹窗 ===== -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3>服务配置</h3>
+        <button class="icon-btn modal-close-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="config-section">
+          <h4>LLM 配置</h4>
+          <div class="config-grid">
+            <div class="config-item"><span class="config-key">base_url</span><span class="config-val">https://api.example.com/v1</span></div>
+            <div class="config-item"><span class="config-key">model</span><span class="config-val">gpt-4o-mini</span></div>
+            <div class="config-item"><span class="config-key">api_key</span><span class="config-val">sk-****</span></div>
+          </div>
+        </div>
+        <div class="config-section">
+          <h4>TTS 配置</h4>
+          <div class="config-grid">
+            <div class="config-item"><span class="config-key">url</span><span class="config-val">http://localhost:9880</span></div>
+            <div class="config-item"><span class="config-key">ref_audio</span><span class="config-val">reference.wav</span></div>
+          </div>
+        </div>
+        <div class="config-section">
+          <h4>Agent 状态</h4>
+          <div class="config-grid">
+            <div class="config-item"><span class="config-key">is_up</span><span class="config-val status-on">● 运行中</span></div>
+            <div class="config-item"><span class="config-key">name</span><span class="config-val">Chat酱</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
