@@ -14,6 +14,7 @@ import 'services/recording_service.dart';
 import 'services/socket_service.dart';
 import 'controllers/home_controller.dart';
 import 'controllers/settings_controller.dart';
+import 'services/chat_storage_service.dart';
 import 'pages/home_page.dart';
 import 'theme/app_theme.dart';
 
@@ -23,6 +24,7 @@ const jsonEncoder = JsonEncoder.withIndent('  ');
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SettingsController.init();
+  await ChatStorageService.init();
 
   debugPrint('========================================');
   debugPrint('🚀 MoeChat 应用启动成功');
@@ -87,6 +89,7 @@ class _AppBindings extends Bindings {
     Get.put(SocketService());
     Get.put(RecordingService());
     Get.put(LoadingService(), permanent: true);
+    Get.put(ChatStorageService());
 
     // Controllers
     Get.put(SettingsController());

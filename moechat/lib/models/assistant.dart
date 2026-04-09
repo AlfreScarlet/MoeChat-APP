@@ -90,6 +90,26 @@ class ChatMessage {
       timestamp: timestamp ?? this.timestamp,
     );
   }
+
+  /// 将消息转换为 JSON 格式
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'sender': sender.name,
+        'content': content,
+        'isTyping': isTyping,
+        'timestamp': timestamp?.toIso8601String(),
+      };
+
+  /// 从 JSON 创建消息对象
+  factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
+        id: json['id'] as String?,
+        sender: MessageSender.values.byName(json['sender'] as String),
+        content: json['content'] as String,
+        isTyping: json['isTyping'] as bool? ?? false,
+        timestamp: json['timestamp'] != null
+            ? DateTime.parse(json['timestamp'] as String)
+            : null,
+      );
 }
 
 /// An AI assistant character with profile, settings, and metadata.

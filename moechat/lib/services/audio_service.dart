@@ -81,6 +81,8 @@ class AudioService extends GetxService {
         channels: Channels.mono,
         format: BufferType.s16le, // 16-bit signed little-endian PCM
         bufferingType: BufferingType.preserved,
+        bufferingTimeNeeds: 0.05, // 50ms 低延迟缓冲，实现实时播放
+        maxBufferSizeBytes: 1024 * 1024 * 10, // 10MB 缓冲区上限
         onBuffering: (isBuffering, handle, time) {
           debugPrint('Buffering: $isBuffering, handle: $handle, time: $time');
         },
@@ -126,7 +128,7 @@ class AudioService extends GetxService {
   /// 添加音频数据到播放流
   ///
   /// 音频数据会立即推送到 SoLoud 进行播放，无需等待完整音频
-  /// 首个数据到达时会自动启动播放
+  /// 注意：音频流应已通过 [startPlayback] 提前创建，以实现低延迟播放
   ///
   /// [audioData] - 16bit PCM 音频数据
   void enqueueAudio(Uint8List audioData) {
@@ -135,8 +137,9 @@ class AudioService extends GetxService {
       debugPrint('⚠️ 音频引擎未初始化，忽略音频数据');
       return;
     }
+    // 兜底保护：如果未提前创建会话，自动创建（但会有延迟）
     if (!_isInSession || _audioSource == null) {
-      debugPrint('⚠️ 未开始音频会话，自动调用 startPlayback()');
+      debugPrint('⚠️ 未提前创建音频会话，自动调用 startPlayback()');
       startPlayback();
     }
 

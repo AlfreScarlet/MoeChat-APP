@@ -12,6 +12,7 @@ import '../services/api_service.dart';
 import '../services/audio_service.dart';
 import '../services/socket_service.dart';
 import '../services/loading_service.dart';
+import '../services/chat_storage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/modals/edit_assistant_modal.dart';
 import '../widgets/modals/settings_modal.dart';
@@ -22,6 +23,7 @@ class HomeController extends GetxController {
   final _apiService = Get.find<ApiService>();
   final _socketService = Get.find<SocketService>();
   final _audioService = Get.find<AudioService>();
+  final _chatStorage = Get.find<ChatStorageService>();
 
   // 助手列表状态
   final assistants = <Assistant>[].obs;
@@ -68,12 +70,48 @@ class HomeController extends GetxController {
     return assistants[index];
   }
 
+  // 存储监听 Worker
+  Worker? _messagesWorker;
+  Worker? _assistantWorker;
+
   @override
   void onInit() {
     super.onInit();
     _listenToSocketFrames();
     _listenToSocketState();
+    _setupStorageListeners();
     debugPrint('✅ HomeController 初始化完成');
+  }
+
+  /// 设置存储监听
+  void _setupStorageListeners() {
+    // 监听消息列表变化，自动保存到本地
+    _messagesWorker = ever(messages, (_) => _saveCurrentMessages());
+
+    // 监听当前助手变化，加载对应聊天记录
+    _assistantWorker = ever(selectedAssistantIndex, (_) {
+      _loadMessagesForCurrentAssistant();
+    });
+  }
+
+  /// 保存当前助手的聊天记录
+  void _saveCurrentMessages() {
+    final assistant = currentAssistant;
+    if (assistant == null) return;
+    _chatStorage.saveMessages(assistant.name, messages);
+  }
+
+  /// 加载当前助手的聊天记录
+  void _loadMessagesForCurrentAssistant() {
+    final assistant = currentAssistant;
+    if (assistant == null) {
+      messages.clear();
+      return;
+    }
+
+    final savedMessages = _chatStorage.loadMessages(assistant.name);
+    messages.assignAll(savedMessages);
+    debugPrint('📂 加载 ${assistant.name} 的 ${savedMessages.length} 条历史消息');
   }
 
   @override
@@ -81,6 +119,8 @@ class HomeController extends GetxController {
     _frameSubscription?.cancel();
     _socketStateWorker?.dispose();
     _callDurationTimer?.cancel();
+    _messagesWorker?.dispose();
+    _assistantWorker?.dispose();
     super.onClose();
   }
 
@@ -188,7 +228,7 @@ class HomeController extends GetxController {
 
     if (result != null) {
       selectedAssistantIndex.value = index;
-      messages.clear();
+      // 不需要手动清空消息，ever 监听器会自动加载新助手的记录
       currentAiMessage.value = null;
       isSending.value = false;
       isReceivingResponse.value = false;
@@ -320,9 +360,8 @@ class HomeController extends GetxController {
           selectedAssistantIndex.value = assistants.length - 1;
         }
 
-        // 如果删除的是当前选中的助手，清理消息状态
+        // 如果删除的是当前选中的助手，ever 监听器会自动加载新助手的记录
         if (wasSelected) {
-          messages.clear();
           currentAiMessage.value = null;
           isSending.value = false;
           isReceivingResponse.value = false;
@@ -539,6 +578,9 @@ class HomeController extends GetxController {
 
     // 发送给服务端
     _socketService.sendText(text.trim());
+
+    // 提前创建音频流，减少收到音频后的播放延迟
+    _audioService.startPlayback();
   }
 
   /// 打断当前回复
@@ -722,6 +764,9 @@ class HomeController extends GetxController {
     // 记录请求发送时间（语音输入通过ASR发起），用于计算音频延迟
     _requestSentTime = DateTime.now();
     _isFirstAudioFrame = true;
+
+    // 提前创建音频流，准备接收AI回复的音频
+    _audioService.startPlayback();
   }
 
   /// 完成当前回复
