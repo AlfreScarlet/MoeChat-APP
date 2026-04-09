@@ -14,9 +14,9 @@ class SettingsController extends GetxController {
   static const _boxName = 'settings';
   late final GetStorage _box;
 
-  // 连接配置
-  final httpApiUrl = ''.obs;
-  final socketUrl = ''.obs;
+  // 连接配置（调试默认值）
+  final httpApiUrl = 'http://127.0.0.1:8001/api'.obs;
+  final socketUrl = 'socket://127.0.0.1:8002'.obs;
 
   // 服务初始化状态
   final isApiInitialized = false.obs;
@@ -32,9 +32,9 @@ class SettingsController extends GetxController {
     super.onInit();
     _box = GetStorage(_boxName);
 
-    // 读取保存的配置
-    httpApiUrl.value = _box.read('httpApiUrl') ?? '';
-    socketUrl.value = _box.read('socketUrl') ?? '';
+    // 读取保存的配置（如果没有则使用调试默认值）
+    httpApiUrl.value = _box.read('httpApiUrl') ?? httpApiUrl.value;
+    socketUrl.value = _box.read('socketUrl') ?? socketUrl.value;
 
     debugPrint('⚙️ SettingsController 初始化');
     debugPrint(
