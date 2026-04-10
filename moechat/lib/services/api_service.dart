@@ -5,9 +5,9 @@ import 'package:dio/dio.dart' as dio;
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
-import '../core/constants/default_value_constants.dart';
 import '../core/constants/timeout_constants.dart';
 import '../models/assistant.dart';
+import 'api/assistant_parser.dart';
 
 /// HTTP API 服务 - 助手管理接口
 class ApiService extends GetxService {
@@ -148,7 +148,10 @@ class ApiService extends GetxService {
       if (data['data'] == null) return [];
 
       final list = (data['data'] as List)
-          .map((json) => _parseAssistant(json))
+          .map(
+            (json) =>
+                AssistantParser.parseAssistant(json as Map<String, dynamic>),
+          )
           .toList();
 
       developer.log('✅ 获取助手列表成功: ${list.length}个', name: 'ApiService');
@@ -168,7 +171,9 @@ class ApiService extends GetxService {
       final data = response.data;
 
       if (data['data'] == null) return null;
-      return _parseAssistant(data['data']);
+      return AssistantParser.parseAssistant(
+        data['data'] as Map<String, dynamic>,
+      );
     } on dio.DioException catch (e) {
       _handleDioError(e, '获取当前助手');
       rethrow;
@@ -184,7 +189,9 @@ class ApiService extends GetxService {
         '/assistant/switch',
         data: {'name': name},
       );
-      return _parseAssistant(response.data['data']);
+      return AssistantParser.parseAssistant(
+        response.data['data'] as Map<String, dynamic>,
+      );
     } on dio.DioException catch (e) {
       _handleDioError(e, '切换助手');
       rethrow;
@@ -230,12 +237,16 @@ class ApiService extends GetxService {
     if (extraDescription != null) data['extraDescription'] = extraDescription;
     if (customPrompt != null) data['customPrompt'] = customPrompt;
     if (startWith != null) data['startWith'] = startWith;
-    if (settings != null) data['settings'] = _featureSettingsToJson(settings);
-    if (gsvSetting != null) data['gsvSetting'] = _gsvSettingsToJson(gsvSetting);
+    if (settings != null)
+      data['settings'] = AssistantParser.featureSettingsToJson(settings);
+    if (gsvSetting != null)
+      data['gsvSetting'] = AssistantParser.gsvSettingsToJson(gsvSetting);
 
     try {
       final response = await _dio.post('/assistant/info/add', data: data);
-      final assistant = _parseAssistant(response.data['data']);
+      final assistant = AssistantParser.parseAssistant(
+        response.data['data'] as Map<String, dynamic>,
+      );
 
       developer.log('✅ 添加助手成功: ${assistant.name}', name: 'ApiService');
 
@@ -282,12 +293,16 @@ class ApiService extends GetxService {
     data['extraDescription'] = extraDescription ?? '';
     data['customPrompt'] = customPrompt ?? '';
     data['startWith'] = startWith ?? [];
-    if (settings != null) data['settings'] = _featureSettingsToJson(settings);
-    if (gsvSetting != null) data['gsvSetting'] = _gsvSettingsToJson(gsvSetting);
+    if (settings != null)
+      data['settings'] = AssistantParser.featureSettingsToJson(settings);
+    if (gsvSetting != null)
+      data['gsvSetting'] = AssistantParser.gsvSettingsToJson(gsvSetting);
 
     try {
       final response = await _dio.post('/assistant/info/update', data: data);
-      final assistant = _parseAssistant(response.data['data']);
+      final assistant = AssistantParser.parseAssistant(
+        response.data['data'] as Map<String, dynamic>,
+      );
 
       developer.log('✅ 更新助手成功: ${assistant.name}', name: 'ApiService');
 
@@ -399,134 +414,5 @@ class ApiService extends GetxService {
   }
 
   // ==================== 数据解析 ====================
-
-  /// 解析 API 返回的 JSON 为 Assistant 模型
-  Assistant _parseAssistant(Map<String, dynamic> json) {
-    return Assistant(
-      name: json['name'] ?? '',
-      avatar: json['avatar'] ?? '',
-      description: json['description'] ?? '',
-      birthday: json['birthday'] ?? '',
-      height: json['height']?.toString() ?? '',
-      weight: json['weight']?.toString() ?? '',
-      personality: json['personality'],
-      roleDescription: json['description'],
-      userNickname: json['user'],
-      userSetting: json['mask'],
-      customPrompt: json['customPrompt'],
-      messageExamples: (json['messageExamples'] as List?)
-          ?.map((e) => e.toString())
-          .toList(),
-      greetings: (json['startWith'] as List?)
-          ?.map((e) => e.toString())
-          .toList(),
-      extraDescription: json['extraDescription'],
-      loveLevel: json['love'] ?? 0,
-      firstMeet: _formatTimestamp(json['firstMeetTime']),
-      lastUpdate: _formatTimestamp(json['updatedAt']),
-      assetsLastModified: (json['assetsLastModified'] ?? 0).toDouble(),
-      gsv: _parseGsvSettings(json['gsvSetting']),
-      features: _parseFeatureSettings(json['settings']),
-      emotionConfig: json['emotionSetting']?.toString(),
-    );
-  }
-
-  GsvSettings _parseGsvSettings(Map<String, dynamic>? json) {
-    if (json == null) return const GsvSettings();
-    return GsvSettings(
-      textLang: json['textLang'],
-      gptModelPath: json['gptModelPath'],
-      sovitsModelPath: json['sovitsModelPath'],
-      refAudioPath: json['refAudioPath'],
-      promptText: json['promptText'],
-      promptLang: json['promptLang'],
-      seed: json['seed'],
-      topK: json['topK'],
-      batchSize: json['batchSize'],
-      textSplitMethod: json['extra']?['text_split_method'],
-      extraRefAudio: json['extraRefAudio']?.toString(),
-    );
-  }
-
-  FeatureSettings _parseFeatureSettings(Map<String, dynamic>? json) {
-    if (json == null) {
-      return const FeatureSettings(
-        contextLength: DefaultValueConstants.contextLength,
-        diary: false,
-        diarySearchBoost: false,
-        diarySearchThreshold: DefaultValueConstants.diarySearchThreshold,
-        coreMemory: false,
-        worldBook: false,
-        worldBookThreshold: DefaultValueConstants.worldBookThreshold,
-        worldBookDepth: DefaultValueConstants.worldBookDepth,
-        emotionSystem: false,
-        emotionPersist: false,
-      );
-    }
-    return FeatureSettings(
-      contextLength: json['contextLength'] ?? DefaultValueConstants.contextLength,
-      diary: json['enableLongMemory'] ?? false,
-      diarySearchBoost: json['enableLongMemorySearchEnhance'] ?? false,
-      diarySearchThreshold: json['longMemoryThreshold']?.toDouble() ?? DefaultValueConstants.diarySearchThreshold,
-      coreMemory: json['enableCoreMemory'] ?? false,
-      worldBook: json['enableLoreBooks'] ?? false,
-      worldBookThreshold: json['loreBooksThreshold']?.toDouble() ?? DefaultValueConstants.worldBookThreshold,
-      worldBookDepth: json['loreBooksDepth'] ?? DefaultValueConstants.worldBookDepth,
-      emotionSystem: json['enableEmotionSystem'] ?? false,
-      emotionPersist: json['enableEmotionPersist'] ?? false,
-    );
-  }
-
-  /// FeatureSettings 转 JSON
-  Map<String, dynamic> _featureSettingsToJson(FeatureSettings settings) {
-    return {
-      'contextLength': settings.contextLength,
-      'enableLongMemory': settings.diary,
-      'enableLongMemorySearchEnhance': settings.diarySearchBoost,
-      'longMemoryThreshold': settings.diarySearchThreshold,
-      'enableCoreMemory': settings.coreMemory,
-      'enableLoreBooks': settings.worldBook,
-      'loreBooksThreshold': settings.worldBookThreshold,
-      'loreBooksDepth': settings.worldBookDepth,
-      'enableEmotionSystem': settings.emotionSystem,
-      'enableEmotionPersist': settings.emotionPersist,
-    };
-  }
-
-  /// GsvSettings 转 JSON
-  Map<String, dynamic> _gsvSettingsToJson(GsvSettings settings) {
-    final json = <String, dynamic>{
-      'textLang': settings.textLang ?? DefaultValueConstants.defaultTextLang,
-      'promptLang': settings.promptLang ?? DefaultValueConstants.defaultPromptLang,
-      'seed': settings.seed ?? DefaultValueConstants.gsvSeed,
-      'topK': settings.topK ?? DefaultValueConstants.gsvTopK,
-      'batchSize': settings.batchSize ?? DefaultValueConstants.gsvBatchSize,
-    };
-
-    // 始终传递这些字段（空字符串表示清空）
-    json['gptModelPath'] = settings.gptModelPath ?? '';
-    json['sovitsModelPath'] = settings.sovitsModelPath ?? '';
-    json['refAudioPath'] = settings.refAudioPath ?? '';
-    json['promptText'] = settings.promptText ?? '';
-    if (settings.textSplitMethod != null) {
-      json['extra'] = {'text_split_method': settings.textSplitMethod};
-    }
-
-    return json;
-  }
-
-  String _formatTimestamp(dynamic timestamp) {
-    if (timestamp == null) return '';
-    try {
-      final seconds = (timestamp is String)
-          ? double.parse(timestamp)
-          : (timestamp as num).toDouble();
-      final date = DateTime.fromMillisecondsSinceEpoch(
-        (seconds * 1000).toInt(),
-      );
-      return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return '';
-    }
-  }
+  // Delegated to AssistantParser — see lib/services/api/assistant_parser.dart
 }

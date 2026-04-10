@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../controllers/settings_controller.dart';
 import '../../data/mock_data.dart';
 import '../../theme/app_theme.dart';
+import '../common/form_widgets.dart';
 
 /// 服务配置设置弹窗
 class SettingsModal extends StatefulWidget {
@@ -157,16 +158,7 @@ class _SettingsModalState extends State<SettingsModal>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text('服务配置', style: AppTheme.cjkStyle(fontSize: 16, fontWeight: 600)),
-          InkWell(
-            onTap: _close,
-            borderRadius: AppTheme.borderRadiusSmall,
-            child: Container(
-              width: 32,
-              height: 32,
-              alignment: Alignment.center,
-              child: const Icon(Icons.close, size: 16, color: AppTheme.text),
-            ),
-          ),
+          ModalCloseButton(onTap: _close),
         ],
       ),
     );
@@ -254,65 +246,16 @@ class _SettingsModalState extends State<SettingsModal>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabeledInput(
+        ModalLabeledInput(
           label: 'HTTP API 地址',
           controller: _httpApiCtrl,
           placeholder: 'https://example.com/api',
         ),
         const SizedBox(height: 14),
-        _buildLabeledInput(
+        ModalLabeledInput(
           label: 'Socket 地址',
           controller: _socketCtrl,
           placeholder: 'ws://example.com/ws',
-        ),
-      ],
-    );
-  }
-
-  /// 标准标签+输入框（复用添加助手页面的输入框样式）
-  Widget _buildLabeledInput({
-    required String label,
-    required TextEditingController controller,
-    required String placeholder,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Text(
-            label,
-            style: AppTheme.cjkStyle(
-              fontSize: 12,
-              fontWeight: 600,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-        ),
-        TextField(
-          controller: controller,
-          style: AppTheme.cjkStyle(fontSize: 13),
-          decoration: InputDecoration(
-            hintText: placeholder,
-            hintStyle: AppTheme.cjkStyle(
-              fontSize: 13,
-              color: AppTheme.textSecondary,
-            ),
-            contentPadding: const EdgeInsets.all(10),
-            isDense: true,
-            border: OutlineInputBorder(
-              borderRadius: AppTheme.borderRadiusSmall,
-              borderSide: const BorderSide(color: AppTheme.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: AppTheme.borderRadiusSmall,
-              borderSide: const BorderSide(color: AppTheme.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: AppTheme.borderRadiusSmall,
-              borderSide: const BorderSide(color: AppTheme.primary),
-            ),
-          ),
         ),
       ],
     );

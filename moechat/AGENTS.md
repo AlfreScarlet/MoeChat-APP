@@ -2,28 +2,59 @@
 
 ## Project Overview
 
-MoeChat is a Flutter-based AI assistant chat application with real-time voice interaction capabilities. It supports multi-platform deployment (Windows, macOS, Linux, Android, iOS, Web) and features a modern UI designed for Chinese users.
+MoeChat is a Flutter-based AI assistant chat application with real-time voice interaction capabilities. It supports multi-platform deployment (Windows, macOS, Linux, Android, iOS, Web) with Windows as the primary target platform. The application is designed for Chinese users and features a modern, rounded UI aesthetic.
 
 ### Key Features
 
-- **AI Assistant Management**: Create, edit, delete, and switch between multiple AI character assistants
-- **Real-time Voice Chat**: Stream audio to the server and receive TTS (Text-to-Speech) responses
+- **AI Assistant Management**: Create, edit, delete, and switch between multiple AI character assistants with rich profile settings
+- **Real-time Voice Chat**: Stream audio to the server and receive TTS (Text-to-Speech) responses with low-latency PCM streaming
 - **Text Chat**: Traditional text-based conversation with streaming responses
-- **Resource Management**: Upload and download assistant resource packages (ZIP)
+- **Resource Management**: Upload and download assistant resource packages (ZIP format)
 - **Rich Character Settings**: Configure personality, voice synthesis (GSV/GPT-SoVITS), memory features, and emotion systems
 
 ## Technology Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| Framework | Flutter 3.11+ | Cross-platform UI |
+| Framework | Flutter 3.11.4+ | Cross-platform UI |
 | State Management | GetX | Reactive state, dependency injection, routing |
+| Local Storage | get_storage | Persistent settings and chat history |
 | HTTP Client | Dio | REST API communication |
-| Audio Playback | flutter_soloud | Real-time PCM streaming |
+| Audio Playback | flutter_soloud | Real-time PCM streaming playback |
 | Audio Recording | record | Microphone capture with PCM streaming |
 | Data Serialization | freezed + json_serializable | Type-safe JSON handling |
-| Local Storage | get_storage | Persistent settings storage |
 | File Operations | file_picker, archive, path_provider | File selection and ZIP handling |
+
+### Key Dependencies
+
+```yaml
+# Core
+dart_sdk: ^3.11.4
+get: ^4.7.2
+get_storage: ^2.1.1
+dio: ^5.4.0
+
+# Audio
+flutter_soloud: ^4.0.0
+record: ^6.2.0
+
+# Serialization
+freezed_annotation: ^2.4.1
+json_annotation: ^4.8.1
+
+# File/Archive
+file_picker: ^8.1.0
+archive: ^3.6.1
+path_provider: ^2.1.0
+
+# Dev Dependencies
+build_runner: ^2.4.8
+freezed: ^2.4.7
+json_serializable: ^6.7.1
+flutter_lints: ^6.0.0
+mockito: ^5.4.4
+wheatley: ^0.1.1
+```
 
 ## Project Structure
 
@@ -44,7 +75,7 @@ lib/
 │       └── ring_buffer.dart       # Optimized ring buffer for socket data
 ├── dtos/                          # Data Transfer Objects (code-generated)
 │   ├── assistant_dto.dart         # Freezed DTOs for API requests
-│   ├── assistant_dto.freezed.dart # Generated (run build_runner to regenerate)
+│   ├── assistant_dto.freezed.dart # Generated (do not edit)
 │   ├── assistant_dto.g.dart       # Generated JSON serialization
 │   └── socket/
 │       └── socket_frame.dart      # Type-safe socket frame types
@@ -55,19 +86,26 @@ lib/
 ├── services/                      # Business logic services
 │   ├── api/                       # HTTP API layer
 │   │   ├── api_client_interface.dart  # API client contracts
-│   │   └── dio_api_client.dart    # Dio implementation
+│   │   ├── assistant_parser.dart      # JSON parsing utilities
+│   │   └── dio_api_client.dart        # Dio implementation
 │   ├── api_service.dart           # Legacy API service (main implementation)
 │   ├── audio_service.dart         # Audio playback (flutter_soloud)
+│   ├── chat_storage_service.dart  # Chat history persistence
 │   ├── loading_service.dart       # Loading indicators and toasts
 │   ├── recording_service.dart     # Audio recording (record package)
 │   └── socket_service.dart        # TCP socket communication
 ├── controllers/                   # GetX controllers
 │   ├── home_controller.dart       # Main app state and business logic
-│   └── settings_controller.dart   # Settings and connection management
+│   ├── settings_controller.dart   # Settings and connection management
+│   └── mixins/                    # Controller mixins for modularity
+│       ├── asset_management_mixin.dart
+│       ├── assistant_crud_mixin.dart
+│       └── socket_frame_handler_mixin.dart
 ├── pages/                         # UI pages
 │   └── home_page.dart             # Main application page
 ├── widgets/                       # UI components
 │   ├── chat/                      # Chat area components
+│   ├── common/                    # Shared widgets
 │   ├── detail/                    # Assistant detail panel widgets
 │   ├── modals/                    # Dialogs and modals
 │   └── sidebar/                   # Sidebar components
@@ -76,6 +114,7 @@ lib/
 
 test/                              # Unit and widget tests
 ├── api_service_test.dart
+├── assistant_parser_pbt_test.dart
 ├── home_controller_test.dart
 └── socket_service_test.dart
 
@@ -153,6 +192,10 @@ Generated files (do not edit manually):
 - `*.freezed.dart` - Immutable data classes with copy methods
 - `*.g.dart` - JSON serialization/deserialization
 
+Configuration is in `build.yaml`:
+- `explicit_to_json: true` - Ensures nested objects serialize properly
+- `generic_argument_factories: true` - Supports generic type serialization
+
 ## Architecture Patterns
 
 ### 1. Repository Pattern
@@ -200,7 +243,18 @@ final isLoading = false.obs;
 Obx(() => isLoading.value ? LoadingSpinner() : AssistantList(assistants));
 ```
 
-### 4. Socket Communication Protocol
+### 4. Mixin-based Controller Organization
+
+The `HomeController` uses mixins to organize functionality:
+
+```dart
+class HomeController extends GetxController
+    with SocketFrameHandlerMixin, AssetManagementMixin, AssistantCrudMixin {
+  // Shared state and composition
+}
+```
+
+### 5. Socket Communication Protocol
 
 Custom frame-based protocol over TCP:
 
@@ -208,7 +262,7 @@ Custom frame-based protocol over TCP:
 <|tag|>payload<|end|>
 ```
 
-Tags:
+Tags (defined in `delimiter_constants.dart`):
 - `<|start|>` - User started speaking (interrupt signal)
 - `<|me|>` - ASR result (user speech recognition)
 - `<|text|>` - AI text response (streaming)
@@ -241,7 +295,7 @@ Tags:
 
 ### Error Handling
 
-Use the custom exception hierarchy:
+Use the custom exception hierarchy in `lib/core/errors/app_exception.dart`:
 
 ```dart
 try {
@@ -255,6 +309,25 @@ try {
 }
 ```
 
+## Audio System Architecture
+
+### Audio Playback (flutter_soloud)
+
+- **Format**: 32kHz, 16-bit, mono PCM
+- **Buffering**: 50ms low-latency for real-time playback
+- **Session Model**: Each conversation creates a new `AudioSource`
+- **Interruption**: 200ms fade-out for natural interruption
+
+Key class: `lib/services/audio_service.dart`
+
+### Audio Recording (record package)
+
+- **Format**: 16kHz, 16-bit, mono PCM (optimized for speech)
+- **Streaming**: Real-time PCM frame broadcast via `StreamController`
+- **Frame Size**: 60ms frames (1920 bytes @ 16kHz)
+
+Key class: `lib/services/recording_service.dart`
+
 ## Testing Strategy
 
 ### Unit Tests
@@ -263,6 +336,7 @@ Focus areas:
 - `test/api_service_test.dart` - API parsing and serialization
 - `test/home_controller_test.dart` - Business logic
 - `test/socket_service_test.dart` - Socket frame parsing
+- `test/assistant_parser_pbt_test.dart` - Property-based testing
 
 ### Running Tests
 
@@ -288,9 +362,11 @@ Tests assume a local server running at `http://127.0.0.1:8001/api`. Modify the U
 Users configure server addresses through the Settings modal (gear icon in sidebar):
 
 - **HTTP API**: `http://<host>:<port>/api`
-- **Socket**: `socket://<host>:<port>`
+- **Socket**: `socket://<host>:<port>` or `tcp://<host>:<port>`
 
 Example: `http://fgs6.bakamoe.com:9091/api` and `socket://fgs6.bakamoe.com:9092`
+
+Settings are persisted via `get_storage` and automatically reconnected on app startup.
 
 ### Audio Settings
 
@@ -303,29 +379,20 @@ static const int channels = 1;         // Mono
 static const int bitsPerSample = 16;   // 16-bit PCM
 ```
 
-## Key Dependencies
+## Theme and UI
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| get | ^4.7.2 | State management |
-| get_storage | ^2.1.1 | Local storage |
-| dio | ^5.4.0 | HTTP client |
-| flutter_soloud | ^4.0.0 | Audio playback |
-| record | ^6.2.0 | Audio recording |
-| file_picker | ^8.1.0 | File selection |
-| archive | ^3.6.1 | ZIP extraction |
-| freezed_annotation | ^2.4.1 | Immutable classes |
-| json_annotation | ^4.8.1 | JSON serialization |
+The app uses a centralized design system in `lib/theme/app_theme.dart`:
 
-### Dev Dependencies
+- **Font**: WenYuan Rounded SC VF (variable font, weight 100-900)
+- **Primary Color**: `#7C5CFC` (purple)
+- **Background**: `#F0F2F5` (light gray)
+- **Sidebar**: `#1E1E2E` (dark)
+- **Animations**: 200ms standard, 300ms panel transitions
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| build_runner | ^2.4.8 | Code generation runner |
-| freezed | ^2.4.7 | Immutable class generation |
-| json_serializable | ^6.7.1 | JSON serialization generation |
-| flutter_lints | ^6.0.0 | Lint rules |
-| mockito | ^5.4.4 | Testing mocks |
+Key constants:
+- `AppTheme.sidebarWidth` = 260.0
+- `AppTheme.detailPanelWidth` = 320.0
+- `AppTheme.panelDuration` = 300ms
 
 ## Security Considerations
 
@@ -338,7 +405,7 @@ static const int bitsPerSample = 16;   // 16-bit PCM
 
 2. **Input Validation**: All user inputs are validated before sending to the API.
 
-3. **Local Storage**: Sensitive data (like API keys) should be stored securely if added in the future.
+3. **Local Storage**: Chat history and settings are stored locally via `get_storage`.
 
 ## Platform-Specific Notes
 
@@ -350,9 +417,9 @@ static const int bitsPerSample = 16;   // 16-bit PCM
 
 ### Other Platforms
 
-- macOS/Linux: Should work but may require platform-specific setup
-- Android/iOS: Supported but not primary focus
-- Web: Limited support due to socket and audio constraints
+- **macOS/Linux**: Should work but may require platform-specific setup
+- **Android/iOS**: Supported but not primary focus
+- **Web**: Limited support due to socket and audio constraints
 
 ## Troubleshooting
 
@@ -368,9 +435,25 @@ static const int bitsPerSample = 16;   // 16-bit PCM
 2. **No audio output**: Verify audio format matches server (32kHz, 16bit, mono PCM)
 3. **Recording not working**: Grant microphone permissions
 
+## API Endpoints
+
+The application communicates with a backend server via these HTTP endpoints:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/assistants` | GET | List all assistants |
+| `/assistant/current` | GET | Get current assistant |
+| `/assistant/switch` | POST | Switch to assistant by name |
+| `/assistant/info/add` | POST | Create new assistant |
+| `/assistant/info/update` | POST | Update assistant |
+| `/assistant/info/delete` | POST | Delete assistant |
+| `/assistant/assets/check` | POST | Check if resources need update |
+| `/assistant/assets/download` | POST | Download resource ZIP |
+| `/assistant/assets/upload` | POST | Upload resource ZIP |
+
 ## Additional Resources
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Detailed architecture documentation
-- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Implementation status and feature summary
 - [Flutter Documentation](https://docs.flutter.dev/)
 - [GetX Documentation](https://github.com/jonataslaw/getx)
+- [freezed Documentation](https://pub.dev/packages/freezed)
+- [flutter_soloud Documentation](https://pub.dev/packages/flutter_soloud)

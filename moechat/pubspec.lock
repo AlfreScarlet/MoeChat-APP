@@ -845,6 +845,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
+  wheatley:
+    dependency: "direct dev"
+    description:
+      name: wheatley
+      sha256: ecba479dfa6d22d51d414614d3e47e7eb60892d9ecdc4aae59dc6fb55da97e74
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   win32:
     dependency: transitive
     description:
