@@ -195,6 +195,9 @@ class HomeController extends GetxController
 
   /// 打断当前回复
   void interrupt() {
+    // 先打断音频播放
+    audioService.interrupt();
+    // 再完成当前回复
     completeCurrentResponse();
   }
 

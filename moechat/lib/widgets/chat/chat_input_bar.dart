@@ -87,8 +87,21 @@ class _ChatInputBarState extends State<ChatInputBar>
           // Text input
           Expanded(child: _buildTextInput()),
           const SizedBox(width: 12),
-          // Send button
-          _buildSendButton(),
+          // Send button or Interrupt button
+          Obx(() {
+            final controller = Get.find<HomeController>();
+            final isReceiving = controller.isReceivingResponse.value;
+            final isPlaying = controller.audioService.isPlaying.value;
+
+            // 打断按钮显示条件：正在接收回复 或 音频正在播放
+            final shouldShowInterrupt = isReceiving || isPlaying;
+
+            if (shouldShowInterrupt) {
+              return _buildInterruptButton();
+            } else {
+              return _buildSendButton();
+            }
+          }),
         ],
       ),
     );
@@ -199,6 +212,30 @@ class _ChatInputBarState extends State<ChatInputBar>
             color: _isSendHovered ? AppTheme.primaryHover : AppTheme.primary,
           ),
           child: const Icon(Icons.arrow_upward, size: 20, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInterruptButton() {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isSendHovered = true),
+      onExit: (_) => setState(() => _isSendHovered = false),
+      child: GestureDetector(
+        onTap: () {
+          final controller = Get.find<HomeController>();
+          controller.interrupt();
+        },
+        child: AnimatedContainer(
+          duration: AppTheme.standardDuration,
+          curve: AppTheme.standardCurve,
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _isSendHovered ? const Color(0xFFD13B48) : AppTheme.danger,
+          ),
+          child: const Icon(Icons.stop, size: 20, color: Colors.white),
         ),
       ),
     );

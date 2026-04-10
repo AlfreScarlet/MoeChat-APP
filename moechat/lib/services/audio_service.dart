@@ -195,11 +195,33 @@ class AudioService extends GetxService {
       _soloud!.setDataIsEnded(_audioSource!);
       debugPrint('✅ 音频会话 #$_currentSessionId 完成，等待自然播放结束');
       
-      // 不清理资源！音频会继续播放直到缓冲区耗尽
-      // 资源在下次 startPlayback() 或 interrupt() 时清理
+      // 启动定时器检测播放完成
+      _waitForPlaybackComplete();
     } catch (e) {
       debugPrint('⚠️ 标记音频结束失败: $e');
     }
+  }
+
+  /// 等待音频播放完成
+  void _waitForPlaybackComplete() {
+    if (_soloud == null) return;
+    
+    // 每100ms检查一次播放状态
+    Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (_soloud == null) {
+        timer.cancel();
+        return;
+      }
+      
+      // 检查是否还有声音在播放
+      final voiceCount = _soloud!.getVoiceCount();
+      if (voiceCount == 0) {
+        isPlaying.value = false;
+        playerState.value = AudioPlayerState.idle;
+        timer.cancel();
+        debugPrint('✅ 音频自然播放完成');
+      }
+    });
   }
 
   // 标记是否正在淡出中，用于处理连续打断
@@ -212,8 +234,16 @@ class AudioService extends GetxService {
   ///
   /// [fadeDuration] - 淡出时长，默认 200ms
   void interrupt({Duration fadeDuration = AudioConstants.defaultFadeDuration}) {
-    if (_soloud == null) return;
-    if (!_isInSession && !isPlaying.value && !_isFadingOut) return;
+    debugPrint('🔍 interrupt() 被调用: _isInSession=$_isInSession, isPlaying=${isPlaying.value}, _isFadingOut=$_isFadingOut, _soundHandle=$_soundHandle');
+    
+    if (_soloud == null) {
+      debugPrint('⚠️ interrupt: _soloud 为 null，直接返回');
+      return;
+    }
+    if (!_isInSession && !isPlaying.value && !_isFadingOut) {
+      debugPrint('⚠️ interrupt: 条件不满足，直接返回');
+      return;
+    }
 
     // 如果正在淡出中，立即清理资源（连续打断）
     if (_isFadingOut) {
@@ -230,8 +260,12 @@ class AudioService extends GetxService {
     try {
       // 如果有正在播放的声音，先淡出
       if (_soundHandle != null && !_soundHandle!.isError) {
+        debugPrint('🔊 有有效的 soundHandle，开始淡出');
         _isFadingOut = true;
         _isInSession = false;
+        
+        // 立即设置 isPlaying = false，让 UI 立即响应
+        isPlaying.value = false;
 
         // 从当前音量淡出到 0
         _soloud!.fadeVolume(_soundHandle!, 0.0, fadeDuration);
@@ -246,12 +280,12 @@ class AudioService extends GetxService {
             } catch (_) {}
             _soundHandle = null;
             _isFadingOut = false;
-            isPlaying.value = false;
             debugPrint('✅ 淡出完成，播放已停止');
           }
         });
       } else {
         // 没有播放中的声音，直接清理
+        debugPrint('🔇 没有有效的 soundHandle，直接清理资源');
         _cleanupCurrentSession();
       }
 

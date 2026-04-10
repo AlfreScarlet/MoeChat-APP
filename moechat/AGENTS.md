@@ -355,6 +355,11 @@ flutter test --name "fetchAssistants should return list"
 
 Tests assume a local server running at `http://127.0.0.1:8001/api`. Modify the URL in test files to match your environment.
 
+Test tags in `dart_test.yaml`:
+- `project-modular-refactor` - Tests related to modular architecture
+- `pbt-round-trip` - Property-based round-trip tests
+- `pbt-default-values` - Default value property tests
+
 ## Configuration
 
 ### Server Connection
