@@ -42,6 +42,7 @@ dependencies:
   record: ^6.2.0             # 音频录制 - v6+ 支持流式PCM和广播流
   file_picker: ^8.1.0       # 文件选择(上传资源)
   archive: ^3.6.1           # zip解压(下载的资源)
+  flutter_list_view: ^1.1.29  # 增强ListView，支持跳转到索引、保持位置
 
   # JSON 序列化
   freezed_annotation: ^2.4.1
