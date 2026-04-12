@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 
 import '../../../controllers/home_controller.dart';
 import '../../../models/assistant.dart';
+import '../../../repositories/assistant_repository.dart';
+import '../../../services/avatar_cache_service.dart';
 import '../../../services/loading_service.dart';
 import '../../../theme/app_theme.dart';
 import '../../common/form_widgets.dart';
@@ -75,6 +77,10 @@ class _EditAssistantModalState extends State<EditAssistantModal>
   // 加载状态
   final _isSaving = false.obs;
 
+  // 头像状态
+  String? _avatarBase64;
+  bool _isLoadingAvatar = false;
+
   @override
   void initState() {
     super.initState();
@@ -103,6 +109,11 @@ class _EditAssistantModalState extends State<EditAssistantModal>
   void _initControllers() {
     final a = widget.assistant;
     _nameCtrl = TextEditingController(text: a?.name ?? '');
+
+    // 如果是编辑模式，加载现有头像
+    if (widget.isEditing) {
+      _loadExistingAvatar();
+    }
     _userCtrl = TextEditingController(text: a?.userNickname ?? '');
     _birthdayCtrl = TextEditingController(text: a?.birthday ?? '');
     _heightCtrl = TextEditingController(text: a?.height ?? '');
@@ -244,8 +255,9 @@ class _EditAssistantModalState extends State<EditAssistantModal>
   }
 
   Future<bool> _addAssistant(HomeController controller) async {
-    return await controller.addAssistant(
-      name: _nameCtrl.text.trim(),
+    final name = _nameCtrl.text.trim();
+    final success = await controller.addAssistant(
+      name: name,
       avatar: 'assets/logo1.png', // 默认头像
       birthday: _birthdayCtrl.text.trim(),
       height: _heightCtrl.text.trim(),
@@ -267,11 +279,19 @@ class _EditAssistantModalState extends State<EditAssistantModal>
       settings: _buildFeatureSettings(),
       gsvSetting: _buildGsvSettings(),
     );
+
+    // 如果助手创建成功且选择了头像，上传头像
+    if (success && _avatarBase64 != null && _avatarBase64!.isNotEmpty) {
+      await _uploadAvatar(name);
+    }
+
+    return success;
   }
 
   Future<bool> _updateAssistant(HomeController controller) async {
-    return await controller.editAssistant(
-      name: widget.assistant!.name,
+    final name = widget.assistant!.name;
+    final success = await controller.editAssistant(
+      name: name,
       avatar: widget.assistant!.avatar,
       birthday: _birthdayCtrl.text.trim(),
       height: _heightCtrl.text.trim(),
@@ -288,6 +308,13 @@ class _EditAssistantModalState extends State<EditAssistantModal>
       settings: _buildFeatureSettings(),
       gsvSetting: _buildGsvSettings(),
     );
+
+    // 如果助手更新成功且选择了新头像，上传头像
+    if (success && _avatarBase64 != null && _avatarBase64!.isNotEmpty) {
+      await _uploadAvatar(name);
+    }
+
+    return success;
   }
 
   List<String>? _parseListField(String text) {
@@ -361,6 +388,52 @@ class _EditAssistantModalState extends State<EditAssistantModal>
           _enableEmotionPersist = value;
       }
     });
+  }
+
+  /// 加载现有头像
+  Future<void> _loadExistingAvatar() async {
+    if (_isLoadingAvatar) return;
+    _isLoadingAvatar = true;
+
+    try {
+      final repository = Get.find<AssistantRepository>();
+      final base64Image = await repository.fetchAvatar(widget.assistant!.name);
+      if (mounted) {
+        setState(() {
+          _avatarBase64 = base64Image;
+        });
+      }
+    } catch (e) {
+      // 头像加载失败不阻止用户编辑，静默处理
+      debugPrint('加载头像失败: $e');
+    } finally {
+      _isLoadingAvatar = false;
+    }
+  }
+
+  /// 处理头像选择
+  void _handleAvatarSelected(String base64Data) {
+    setState(() {
+      _avatarBase64 = base64Data;
+    });
+  }
+
+  /// 上传头像到服务器
+  Future<bool> _uploadAvatar(String assistantName) async {
+    if (_avatarBase64 == null || _avatarBase64!.isEmpty) return true;
+
+    try {
+      final repository = Get.find<AssistantRepository>();
+      await repository.uploadAvatar(assistantName, _avatarBase64!);
+
+      // 更新本地缓存，触发 UI 刷新
+      AvatarCacheService.to.updateAvatar(assistantName, _avatarBase64!);
+
+      return true;
+    } catch (e) {
+      debugPrint('上传头像失败: $e');
+      return false;
+    }
   }
 
   @override
@@ -461,6 +534,8 @@ class _EditAssistantModalState extends State<EditAssistantModal>
               customPromptCtrl: _customPromptCtrl,
               startWithCtrl: _startWithCtrl,
               isEditing: widget.isEditing,
+              avatarBase64: _avatarBase64,
+              onAvatarSelected: _handleAvatarSelected,
             ),
 
             // ── 功能设置 ──

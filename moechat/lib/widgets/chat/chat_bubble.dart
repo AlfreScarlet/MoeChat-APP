@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../controllers/home_controller.dart';
 import '../../models/assistant.dart';
 import '../../theme/app_theme.dart';
+import '../common/avatar_image.dart';
 import 'streaming_text.dart';
 import 'typing_indicator.dart';
 
@@ -38,27 +39,14 @@ class ChatBubble extends StatelessWidget {
   Widget _buildBotMessage(double maxBubbleWidth) {
     final controller = Get.find<HomeController>();
     final assistant = controller.currentAssistant;
-    final avatarUrl = assistant?.avatar ?? '';
-    final isValidUrl =
-        avatarUrl.isNotEmpty &&
-        (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://'));
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClipOval(
-          child: SizedBox(
-            width: 32,
-            height: 32,
-            child: isValidUrl
-                ? Image.network(
-                    avatarUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) =>
-                        Image.asset('assets/logo1.png', fit: BoxFit.cover),
-                  )
-                : Image.asset('assets/logo1.png', fit: BoxFit.cover),
-          ),
+        ReactiveAvatarImage(
+          assistantName: assistant?.name ?? '',
+          fallbackAvatar: assistant?.avatar,
+          size: 32,
         ),
         const SizedBox(width: 10),
         ConstrainedBox(

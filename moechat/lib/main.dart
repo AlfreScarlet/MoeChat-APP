@@ -9,6 +9,7 @@ import 'repositories/assistant_repository.dart';
 import 'services/api/dio_api_client.dart';
 import 'services/api_service.dart';
 import 'services/audio_service.dart';
+import 'services/avatar_cache_service.dart';
 import 'services/loading_service.dart';
 import 'services/recording_service.dart';
 import 'services/socket_service.dart';
@@ -75,14 +76,22 @@ class _AppBindings extends Bindings {
       dioClient,
       null, // Base URL set later via initialize()
     );
+    final avatarApiClient = DioAvatarApiClient(
+      dioClient,
+      null, // Base URL set later via initialize()
+    );
     // final assetsApiClient = DioAssetsApiClient(
     //   dioClient,
     //   null, // Base URL set later via initialize()
     // );
 
+    // Register API clients for external initialization
+    Get.put<DioAssistantApiClient>(assistantApiClient);
+    Get.put<DioAvatarApiClient>(avatarApiClient);
+
     // New architecture: Repositories
     Get.put<AssistantRepository>(
-      AssistantRepositoryImpl(assistantApiClient),
+      AssistantRepositoryImpl(assistantApiClient, avatarApiClient),
     );
 
     // Legacy services
@@ -90,6 +99,9 @@ class _AppBindings extends Bindings {
     Get.put(RecordingService());
     Get.put(LoadingService(), permanent: true);
     Get.put(ChatStorageService());
+
+    // Avatar cache service
+    Get.put(AvatarCacheService(), permanent: true);
 
     // Controllers
     Get.put(SettingsController());

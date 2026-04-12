@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../../controllers/home_controller.dart';
 import '../../theme/app_theme.dart';
+import '../common/avatar_image.dart';
 
 /// Detail panel cover area.
 ///
@@ -42,22 +43,7 @@ class _DetailCoverState extends State<DetailCover>
     super.dispose();
   }
 
-  Widget _buildAvatarImage(String avatarPath) {
-    final isValidUrl =
-        avatarPath.isNotEmpty &&
-        (avatarPath.startsWith('http://') || avatarPath.startsWith('https://'));
 
-    if (!isValidUrl) {
-      return Image.asset('assets/logo1.png', fit: BoxFit.contain);
-    }
-
-    return Image.network(
-      avatarPath,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) =>
-          Image.asset('assets/logo1.png', fit: BoxFit.contain),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +79,14 @@ class _DetailCoverState extends State<DetailCover>
             ),
 
             // Layer 2: Assistant avatar image (contain mode)
-            Positioned.fill(child: _buildAvatarImage(assistant.avatar)),
+            Positioned.fill(
+              child: ReactiveAvatarImage(
+                assistantName: assistant.name,
+                fallbackAvatar: assistant.avatar,
+                fit: BoxFit.contain,
+                circular: false,
+              ),
+            ),
 
             // Layer 3: Gradient overlay mask (bottom to top)
             Positioned.fill(

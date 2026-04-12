@@ -2,6 +2,17 @@ import 'dart:typed_data';
 
 import '../../../models/assistant.dart';
 
+/// Interface for avatar-related API operations.
+abstract class AvatarApiClient {
+  /// Fetches the avatar image for an assistant.
+  /// Returns base64 encoded image string.
+  Future<String> fetchAvatar(String name);
+
+  /// Uploads an avatar image for an assistant.
+  /// [data] is base64 encoded image string.
+  Future<void> uploadAvatar(String name, String data);
+}
+
 /// Interface for assistant-related API operations.
 abstract class AssistantApiClient {
   /// Fetches all assistants from the server.

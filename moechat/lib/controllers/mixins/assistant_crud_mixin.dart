@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../models/assistant.dart';
 import '../../services/api_service.dart';
+import '../../services/avatar_cache_service.dart';
 import '../../services/loading_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -60,6 +61,9 @@ mixin AssistantCrudMixin on GetxController {
 
       assistants.assignAll(list);
       debugPrint('✅ 加载了 ${list.length} 个助手');
+
+      // 预加载所有助手头像（异步，不阻塞UI）
+      _preloadAvatars(list);
 
       // 获取当前助手并选中（失败不影响列表显示）
       try {
@@ -249,6 +253,14 @@ mixin AssistantCrudMixin on GetxController {
       return true;
     }
     return false;
+  }
+
+  /// 预加载助手头像
+  void _preloadAvatars(List<Assistant> list) {
+    if (list.isEmpty) return;
+
+    final names = list.map((a) => a.name).toList();
+    AvatarCacheService.to.preloadAvatars(names);
   }
 
   /// 显示删除确认对话框

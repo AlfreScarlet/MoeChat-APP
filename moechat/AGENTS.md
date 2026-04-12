@@ -2,59 +2,35 @@
 
 ## Project Overview
 
-MoeChat is a Flutter-based AI assistant chat application with real-time voice interaction capabilities. It supports multi-platform deployment (Windows, macOS, Linux, Android, iOS, Web) with Windows as the primary target platform. The application is designed for Chinese users and features a modern, rounded UI aesthetic.
+MoeChat is a Flutter-based AI assistant chat application designed for Chinese users, featuring real-time voice interaction capabilities. It supports multi-platform deployment (Windows, macOS, Linux, Android, iOS, Web) with Windows as the primary target platform. The application features a modern, rounded UI aesthetic using a custom Chinese variable font.
 
 ### Key Features
 
-- **AI Assistant Management**: Create, edit, delete, and switch between multiple AI character assistants with rich profile settings
+- **AI Assistant Management**: Create, edit, delete, and switch between multiple AI character assistants with rich profile settings (personality, voice synthesis, memory features, emotion systems)
 - **Real-time Voice Chat**: Stream audio to the server and receive TTS (Text-to-Speech) responses with low-latency PCM streaming
 - **Text Chat**: Traditional text-based conversation with streaming responses
-- **Resource Management**: Upload and download assistant resource packages (ZIP format)
-- **Rich Character Settings**: Configure personality, voice synthesis (GSV/GPT-SoVITS), memory features, and emotion systems
+- **Resource Management**: Upload and download assistant resource packages (ZIP format) containing images, audio files, etc.
+- **Rich Character Settings**: Configure personality, voice synthesis (GSV/GPT-SoVITS), memory features (diary, core memory, world book), and emotion systems
 
 ## Technology Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Framework | Flutter 3.11.4+ | Cross-platform UI |
-| State Management | GetX | Reactive state, dependency injection, routing |
-| Local Storage | get_storage | Persistent settings and chat history |
-| HTTP Client | Dio | REST API communication |
-| Audio Playback | flutter_soloud | Real-time PCM streaming playback |
-| Audio Recording | record | Microphone capture with PCM streaming |
-| Data Serialization | freezed + json_serializable | Type-safe JSON handling |
-| File Operations | file_picker, archive, path_provider | File selection and ZIP handling |
+| Layer | Technology | Version | Purpose |
+|-------|-----------|---------|---------|
+| Framework | Flutter | 3.11.4+ | Cross-platform UI |
+| State Management | GetX | ^4.7.2 | Reactive state, dependency injection, routing |
+| Local Storage | get_storage | ^2.1.1 | Persistent settings and chat history |
+| HTTP Client | Dio | ^5.4.0 | REST API communication |
+| Audio Playback | flutter_soloud | ^4.0.0 | Real-time PCM streaming playback |
+| Audio Recording | record | ^6.2.0 | Microphone capture with PCM streaming |
+| Data Serialization | freezed + json_serializable | ^2.4.1 / ^6.7.1 | Type-safe JSON handling |
+| File Operations | file_picker, archive, path_provider | Latest | File selection and ZIP handling |
 
-### Key Dependencies
+### Configuration Files
 
-```yaml
-# Core
-dart_sdk: ^3.11.4
-get: ^4.7.2
-get_storage: ^2.1.1
-dio: ^5.4.0
-
-# Audio
-flutter_soloud: ^4.0.0
-record: ^6.2.0
-
-# Serialization
-freezed_annotation: ^2.4.1
-json_annotation: ^4.8.1
-
-# File/Archive
-file_picker: ^8.1.0
-archive: ^3.6.1
-path_provider: ^2.1.0
-
-# Dev Dependencies
-build_runner: ^2.4.8
-freezed: ^2.4.7
-json_serializable: ^6.7.1
-flutter_lints: ^6.0.0
-mockito: ^5.4.4
-wheatley: ^0.1.1
-```
+- **`pubspec.yaml`** - Project metadata, dependencies, and Flutter-specific configuration
+- **`analysis_options.yaml`** - Dart analyzer configuration (uses `package:flutter_lints/flutter.yaml`)
+- **`build.yaml`** - Code generation configuration for freezed/json_serializable
+- **`dart_test.yaml`** - Test tags configuration for organizing tests
 
 ## Project Structure
 
@@ -63,63 +39,63 @@ lib/
 ├── main.dart                      # Entry point, dependency injection setup
 ├── core/                          # Core utilities and constants
 │   ├── constants/                 # Centralized constants
-│   │   ├── audio_constants.dart   # Audio parameters (sample rate, etc.)
-│   │   ├── buffer_constants.dart  # Socket buffer limits
+│   │   ├── audio_constants.dart   # Audio parameters (sample rate: 32kHz, etc.)
+│   │   ├── buffer_constants.dart  # Socket buffer limits (1MB max)
 │   │   ├── default_value_constants.dart  # Default settings values
 │   │   ├── delimiter_constants.dart      # Socket frame delimiters
 │   │   └── timeout_constants.dart        # Network timeouts
 │   ├── errors/                    # Exception hierarchy
-│   │   ├── app_exception.dart     # Base exception classes
+│   │   ├── app_exception.dart     # Base exception classes (NetworkException, ApiException, etc.)
 │   │   └── error_handler.dart     # Error handling utilities
 │   └── utils/                     # Utility classes
 │       └── ring_buffer.dart       # Optimized ring buffer for socket data
 ├── dtos/                          # Data Transfer Objects (code-generated)
-│   ├── assistant_dto.dart         # Freezed DTOs for API requests
+│   ├── assistant_dto.dart         # Freezed DTOs for API requests (CreateAssistantDto, UpdateAssistantDto, etc.)
 │   ├── assistant_dto.freezed.dart # Generated (do not edit)
 │   ├── assistant_dto.g.dart       # Generated JSON serialization
 │   └── socket/
 │       └── socket_frame.dart      # Type-safe socket frame types
-├── models/                        # Domain models
-│   └── assistant.dart             # Assistant, ChatMessage, settings classes
+├── models/                        # Domain models (plain Dart classes)
+│   └── assistant.dart             # Assistant, ChatMessage, GsvSettings, FeatureSettings, etc.
 ├── repositories/                  # Repository pattern implementation
-│   └── assistant_repository.dart  # Abstract and implementation
+│   └── assistant_repository.dart  # Abstract AssistantRepository + AssistantRepositoryImpl
 ├── services/                      # Business logic services
 │   ├── api/                       # HTTP API layer
-│   │   ├── api_client_interface.dart  # API client contracts
-│   │   ├── assistant_parser.dart      # JSON parsing utilities
-│   │   └── dio_api_client.dart        # Dio implementation
-│   ├── api_service.dart           # Legacy API service (main implementation)
-│   ├── audio_service.dart         # Audio playback (flutter_soloud)
-│   ├── chat_storage_service.dart  # Chat history persistence
-│   ├── loading_service.dart       # Loading indicators and toasts
-│   ├── recording_service.dart     # Audio recording (record package)
-│   └── socket_service.dart        # TCP socket communication
+│   │   ├── api_client_interface.dart  # API client contracts (AssistantApiClient, AssetsApiClient)
+│   │   ├── assistant_parser.dart      # JSON parsing/serialization utilities
+│   │   └── dio_api_client.dart        # Dio implementations
+│   ├── api_service.dart           # Legacy API service (main implementation for most endpoints)
+│   ├── audio_service.dart         # Audio playback (flutter_soloud) - 32kHz PCM streaming
+│   ├── chat_storage_service.dart  # Chat history persistence via get_storage
+│   ├── loading_service.dart       # Loading indicators and toast notifications
+│   ├── recording_service.dart     # Audio recording (record package) - 16kHz PCM streaming
+│   └── socket_service.dart        # TCP socket communication with frame protocol
 ├── controllers/                   # GetX controllers
-│   ├── home_controller.dart       # Main app state and business logic
+│   ├── home_controller.dart       # Main app state and business logic (uses mixins)
 │   ├── settings_controller.dart   # Settings and connection management
 │   └── mixins/                    # Controller mixins for modularity
 │       ├── asset_management_mixin.dart
 │       ├── assistant_crud_mixin.dart
 │       └── socket_frame_handler_mixin.dart
 ├── pages/                         # UI pages
-│   └── home_page.dart             # Main application page
-├── widgets/                       # UI components
-│   ├── chat/                      # Chat area components
-│   ├── common/                    # Shared widgets
-│   ├── detail/                    # Assistant detail panel widgets
-│   ├── modals/                    # Dialogs and modals
+│   └── home_page.dart             # Main application page with three-panel layout
+├── widgets/                       # UI components organized by feature
+│   ├── chat/                      # Chat area components (chat_area, chat_bubble, chat_input_bar, etc.)
+│   ├── common/                    # Shared widgets (form_widgets, loading_dialog, toast_widget)
+│   ├── detail/                    # Assistant detail panel widgets (assets_section, gsv_settings, etc.)
+│   ├── modals/                    # Dialogs and modals (edit_assistant_modal, settings_modal)
 │   └── sidebar/                   # Sidebar components
 └── theme/                         # App theming
-    └── app_theme.dart             # Colors, typography, theme data
+    └── app_theme.dart             # Colors, typography, theme data (WenYuan Rounded SC VF font)
 
 test/                              # Unit and widget tests
-├── api_service_test.dart
-├── assistant_parser_pbt_test.dart
-├── home_controller_test.dart
-└── socket_service_test.dart
+├── api_service_test.dart          # API service tests (requires local server)
+├── assistant_parser_pbt_test.dart # Property-based tests for JSON parsing
+├── home_controller_test.dart      # Controller business logic tests
+└── socket_service_test.dart       # Socket frame parsing tests
 
 assets/                            # Static assets
-├── fonts/                         # WenYuan Rounded SC VF font
+├── fonts/                         # WenYuan Rounded SC VF variable font
 ├── logo1.png
 └── logo2.png
 ```
@@ -176,29 +152,19 @@ flutter test
 # Run specific test file
 flutter test test/api_service_test.dart
 
+# Run tests with specific tags
+flutter test --tags "project-modular-refactor"
+flutter test --tags "pbt-round-trip"
+
 # Run with coverage
 flutter test --coverage
 ```
 
-## Code Generation
-
-This project uses code generation for JSON serialization. After modifying DTO files (`lib/dtos/*.dart`), run:
-
-```bash
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-
-Generated files (do not edit manually):
-- `*.freezed.dart` - Immutable data classes with copy methods
-- `*.g.dart` - JSON serialization/deserialization
-
-Configuration is in `build.yaml`:
-- `explicit_to_json: true` - Ensures nested objects serialize properly
-- `generic_argument_factories: true` - Supports generic type serialization
-
 ## Architecture Patterns
 
 ### 1. Repository Pattern
+
+The project uses the repository pattern to abstract data access:
 
 ```dart
 // Abstract repository defines the contract
@@ -218,7 +184,7 @@ class AssistantRepositoryImpl implements AssistantRepository {
 
 ### 2. Service Layer
 
-Services contain business logic and are registered with GetX for dependency injection:
+Services contain business logic and are registered with GetX for dependency injection in `main.dart`:
 
 ```dart
 // In main.dart
@@ -262,21 +228,40 @@ Custom frame-based protocol over TCP:
 <|tag|>payload<|end|>
 ```
 
-Tags (defined in `delimiter_constants.dart`):
+Tags (defined in `lib/core/constants/delimiter_constants.dart`):
 - `<|start|>` - User started speaking (interrupt signal)
 - `<|me|>` - ASR result (user speech recognition)
 - `<|text|>` - AI text response (streaming)
 - `<|audio|>` - AI audio response (PCM data)
 - `<|complete|>` - Response complete signal
 
-## Coding Conventions
+## Code Generation
 
-### Naming
+This project uses code generation for JSON serialization. After modifying DTO files (`lib/dtos/*.dart`), run:
+
+```bash
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+Generated files (do not edit manually):
+- `*.freezed.dart` - Immutable data classes with copy methods
+- `*.g.dart` - JSON serialization/deserialization
+
+Configuration in `build.yaml`:
+- `explicit_to_json: true` - Ensures nested objects serialize properly
+- `generic_argument_factories: true` - Supports generic type serialization
+- `create_factory: true` / `create_to_json: true` - Generates fromJson/toJson
+
+## Code Style Guidelines
+
+### Naming Conventions
 
 - **Files**: `snake_case.dart`
 - **Classes**: `PascalCase`
 - **Variables/Functions**: `camelCase`
-- **Constants**: `camelCase` (within classes), `SCREAMING_SNAKE_CASE` (top-level)
+- **Constants**: 
+  - `camelCase` within classes
+  - `SCREAMING_SNAKE_CASE` for top-level constants in `*_constants.dart` files
 - **Private members**: `_leadingUnderscore`
 
 ### Code Style
@@ -284,14 +269,14 @@ Tags (defined in `delimiter_constants.dart`):
 - Use `const` constructors where possible
 - Prefer single quotes for strings
 - Use trailing commas for multi-line parameter lists
-- Maximum line length: 80 characters
+- Maximum line length: 80 characters (enforced by linter)
 - Use `dart format` for formatting
 
 ### Documentation
 
-- All public APIs must have dartdoc comments
-- Use `///` for documentation comments
+- All public APIs should have dartdoc comments (`///`)
 - Include code examples where helpful
+- Comments in Chinese are acceptable and common in this codebase
 
 ### Error Handling
 
@@ -307,6 +292,39 @@ try {
 } on ValidationException catch (e) {
   // Handle validation error
 }
+```
+
+## Testing Strategy
+
+### Test Organization
+
+Tests are organized by functionality in the `test/` directory:
+
+| Test File | Purpose | Requirements |
+|-----------|---------|--------------|
+| `api_service_test.dart` | API parsing and serialization | Local server at `http://127.0.0.1:8001/api` |
+| `home_controller_test.dart` | Business logic | Mock dependencies |
+| `socket_service_test.dart` | Socket frame parsing | None (unit tests) |
+| `assistant_parser_pbt_test.dart` | Property-based testing | None |
+
+### Test Tags
+
+Tags are defined in `dart_test.yaml`:
+- `project-modular-refactor` - Tests related to modular architecture
+- `pbt-round-trip` - Property-based round-trip tests
+- `pbt-default-values` - Default value property tests
+
+### Property-Based Testing
+
+The project uses `wheatley` for property-based testing (see `assistant_parser_pbt_test.dart`):
+
+```dart
+await forAll(featureSettingsGen())((settings) {
+  final json = AssistantParser.featureSettingsToJson(settings);
+  final parsed = AssistantParser.parseFeatureSettings(json);
+  expect(parsed.contextLength, equals(settings.contextLength));
+  // ...
+});
 ```
 
 ## Audio System Architecture
@@ -327,38 +345,6 @@ Key class: `lib/services/audio_service.dart`
 - **Frame Size**: 60ms frames (1920 bytes @ 16kHz)
 
 Key class: `lib/services/recording_service.dart`
-
-## Testing Strategy
-
-### Unit Tests
-
-Focus areas:
-- `test/api_service_test.dart` - API parsing and serialization
-- `test/home_controller_test.dart` - Business logic
-- `test/socket_service_test.dart` - Socket frame parsing
-- `test/assistant_parser_pbt_test.dart` - Property-based testing
-
-### Running Tests
-
-```bash
-# Run all tests
-flutter test
-
-# Run with verbose output
-flutter test -v
-
-# Run specific test
-flutter test --name "fetchAssistants should return list"
-```
-
-### Test Configuration
-
-Tests assume a local server running at `http://127.0.0.1:8001/api`. Modify the URL in test files to match your environment.
-
-Test tags in `dart_test.yaml`:
-- `project-modular-refactor` - Tests related to modular architecture
-- `pbt-round-trip` - Property-based round-trip tests
-- `pbt-default-values` - Default value property tests
 
 ## Configuration
 
@@ -399,6 +385,22 @@ Key constants:
 - `AppTheme.detailPanelWidth` = 320.0
 - `AppTheme.panelDuration` = 300ms
 
+## API Endpoints
+
+The application communicates with a backend server via these HTTP endpoints:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/assistants` | GET | List all assistants |
+| `/assistant/current` | GET | Get current assistant |
+| `/assistant/switch` | POST | Switch to assistant by name |
+| `/assistant/info/add` | POST | Create new assistant |
+| `/assistant/info/update` | POST | Update assistant |
+| `/assistant/info/delete` | POST | Delete assistant |
+| `/assistant/assets/check` | POST | Check if resources need update |
+| `/assistant/assets/download` | POST | Download resource ZIP |
+| `/assistant/assets/upload` | POST | Upload resource ZIP |
+
 ## Security Considerations
 
 1. **Path Traversal**: The asset download feature validates file paths to prevent path traversal attacks:
@@ -430,31 +432,30 @@ Key constants:
 
 ### Build Issues
 
-1. **Code generation out of date**: Run `flutter pub run build_runner build`
+1. **Code generation out of date**: Run `flutter pub run build_runner build --delete-conflicting-outputs`
 2. **Flutter version mismatch**: Ensure Flutter SDK >= 3.11.4
-3. **Audio plugin issues**: Clean build and restart
+3. **Audio plugin issues**: Clean build with `flutter clean` and restart
 
 ### Runtime Issues
 
 1. **Socket connection failed**: Check firewall settings and server address
 2. **No audio output**: Verify audio format matches server (32kHz, 16bit, mono PCM)
-3. **Recording not working**: Grant microphone permissions
+3. **Recording not working**: Grant microphone permissions in system settings
+4. **API connection errors**: Verify server is running and URL is correct
 
-## API Endpoints
+## Dependencies of Note
 
-The application communicates with a backend server via these HTTP endpoints:
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/assistants` | GET | List all assistants |
-| `/assistant/current` | GET | Get current assistant |
-| `/assistant/switch` | POST | Switch to assistant by name |
-| `/assistant/info/add` | POST | Create new assistant |
-| `/assistant/info/update` | POST | Update assistant |
-| `/assistant/info/delete` | POST | Delete assistant |
-| `/assistant/assets/check` | POST | Check if resources need update |
-| `/assistant/assets/download` | POST | Download resource ZIP |
-| `/assistant/assets/upload` | POST | Upload resource ZIP |
+| Package | Purpose |
+|---------|---------|
+| `flutter_soloud` | High-performance audio playback with PCM streaming support |
+| `record` | Cross-platform audio recording with stream support |
+| `dio` | Powerful HTTP client with interceptors |
+| `get` + `get_storage` | State management and persistent storage |
+| `freezed` | Immutable data classes with code generation |
+| `file_picker` | Native file selection dialogs |
+| `archive` | ZIP compression/decompression |
+| `wheatley` | Property-based testing framework |
+| `mockito` | Mocking framework for tests |
 
 ## Additional Resources
 
@@ -462,3 +463,4 @@ The application communicates with a backend server via these HTTP endpoints:
 - [GetX Documentation](https://github.com/jonataslaw/getx)
 - [freezed Documentation](https://pub.dev/packages/freezed)
 - [flutter_soloud Documentation](https://pub.dev/packages/flutter_soloud)
+- [Dio Documentation](https://pub.dev/packages/dio)

@@ -1,3 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
@@ -509,11 +514,25 @@ class FormRow extends StatelessWidget {
   }
 }
 
-/// 头像选择按钮 — 跨两行显示，带悬停遮罩效果
+/// 头像选择按钮 — 正方形设计，带优雅悬停效果
 ///
-/// 从 `_AvatarPickerButton` 提取。
+/// 特性：
+/// - 固定 96x96 尺寸，圆角 12px
+/// - 默认显示灰色背景 + 相机图标占位
+/// - 悬停时显示紫色渐变遮罩和上传提示
+/// - 支持 base64 图片预览
 class AvatarPickerButton extends StatefulWidget {
-  const AvatarPickerButton({super.key});
+  /// 当前头像的 base64 数据（如果有）
+  final String? avatarBase64;
+
+  /// 选择头像后的回调，返回 base64 编码的图片数据
+  final ValueChanged<String>? onAvatarSelected;
+
+  const AvatarPickerButton({
+    super.key,
+    this.avatarBase64,
+    this.onAvatarSelected,
+  });
 
   @override
   State<AvatarPickerButton> createState() => _AvatarPickerButtonState();
@@ -522,6 +541,82 @@ class AvatarPickerButton extends StatefulWidget {
 class _AvatarPickerButtonState extends State<AvatarPickerButton> {
   bool _hovered = false;
 
+  Future<void> _pickImage() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      Uint8List? bytes = file.bytes;
+
+      // 如果 bytes 为空，尝试从路径读取文件
+      if (bytes == null && file.path != null) {
+        final fileObj = File(file.path!);
+        bytes = await fileObj.readAsBytes();
+      }
+
+      if (bytes == null || bytes.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('无法读取图片文件')),
+          );
+        }
+        return;
+      }
+
+      // 转换为 base64
+      final base64String = base64Encode(bytes);
+
+      // 调用回调
+      widget.onAvatarSelected?.call(base64String);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('选择图片失败: $e')),
+        );
+      }
+    }
+  }
+
+  bool get _hasImage {
+    return widget.avatarBase64 != null && widget.avatarBase64!.isNotEmpty;
+  }
+
+  Widget _buildImage() {
+    if (_hasImage) {
+      try {
+        return Image.memory(
+          base64Decode(widget.avatarBase64!),
+          fit: BoxFit.cover,
+          width: 96,
+          height: 96,
+          errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+        );
+      } catch (_) {
+        return _buildPlaceholder();
+      }
+    }
+    return _buildPlaceholder();
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      width: 96,
+      height: 96,
+      color: const Color(0xFFF5F5F7),
+      child: const Icon(
+        Icons.camera_alt_outlined,
+        size: 32,
+        color: Color(0xFFB0B0C0),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -529,60 +624,72 @@ class _AvatarPickerButtonState extends State<AvatarPickerButton> {
       onExit: (_) => setState(() => _hovered = false),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () {
-          // TODO: 实现头像上传
-        },
-        child: Stack(
-          children: [
-            AnimatedContainer(
-              duration: AppTheme.standardDuration,
-              width: 96,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: _hovered
-                      ? AppTheme.primary.withValues(alpha: 0.5)
-                      : AppTheme.primary.withValues(alpha: 0.2),
-                  width: _hovered ? 2 : 1,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.asset('assets/logo1.png', fit: BoxFit.cover),
-              ),
-            ),
-            // 悬停遮罩
-            Positioned.fill(
-              child: AnimatedOpacity(
-                opacity: _hovered ? 1.0 : 0.0,
-                duration: AppTheme.standardDuration,
-                child: Container(
+        onTap: _pickImage,
+        child: SizedBox(
+          width: 96,
+          height: 96,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // 底层图片
+                _buildImage(),
+
+                // 边框
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: AppTheme.primary.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _hovered
+                          ? AppTheme.primary.withValues(alpha: 0.6)
+                          : const Color(0xFFE0E0E8),
+                      width: _hovered ? 2 : 1,
+                    ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.add_photo_alternate_outlined,
-                        size: 24,
-                        color: Colors.white,
+                ),
+
+                // 悬停遮罩
+                AnimatedOpacity(
+                  opacity: _hovered ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppTheme.primary.withValues(alpha: 0.7),
+                          AppTheme.primary.withValues(alpha: 0.85),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '上传头像',
-                        style: AppTheme.cjkStyle(
-                          fontSize: 11,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.add_photo_alternate_outlined,
+                          size: 28,
                           color: Colors.white,
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+                        Text(
+                          _hasImage ? '更换头像' : '上传头像',
+                          style: AppTheme.cjkStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                            fontWeight: 500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

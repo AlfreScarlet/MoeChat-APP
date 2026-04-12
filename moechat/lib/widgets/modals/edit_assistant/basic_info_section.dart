@@ -21,6 +21,12 @@ class BasicInfoSection extends StatelessWidget {
   final TextEditingController startWithCtrl;
   final bool isEditing;
 
+  /// 当前头像的 base64 数据
+  final String? avatarBase64;
+
+  /// 头像选择回调
+  final ValueChanged<String>? onAvatarSelected;
+
   const BasicInfoSection({
     super.key,
     required this.nameCtrl,
@@ -36,6 +42,8 @@ class BasicInfoSection extends StatelessWidget {
     required this.customPromptCtrl,
     required this.startWithCtrl,
     required this.isEditing,
+    this.avatarBase64,
+    this.onAvatarSelected,
   });
 
   @override
@@ -48,7 +56,10 @@ class BasicInfoSection extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const AvatarPickerButton(),
+              AvatarPickerButton(
+                avatarBase64: avatarBase64,
+                onAvatarSelected: onAvatarSelected,
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

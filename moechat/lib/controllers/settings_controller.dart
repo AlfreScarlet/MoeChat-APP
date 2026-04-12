@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../services/api_service.dart';
+import '../services/api/dio_api_client.dart';
 import '../services/socket_service.dart';
 import '../services/loading_service.dart';
 import '../controllers/home_controller.dart';
@@ -241,6 +242,19 @@ class SettingsController extends GetxController {
       debugPrint('🌐 解析URL: $url -> $baseUrl');
 
       Get.find<ApiService>().initialize(baseUrl);
+
+      // Initialize new architecture API clients
+      try {
+        Get.find<DioAssistantApiClient>().initialize(baseUrl);
+      } catch (e) {
+        debugPrint('⚠️ DioAssistantApiClient 未注册，跳过初始化');
+      }
+      try {
+        Get.find<DioAvatarApiClient>().initialize(baseUrl);
+      } catch (e) {
+        debugPrint('⚠️ DioAvatarApiClient 未注册，跳过初始化');
+      }
+
       isApiInitialized.value = true;
     } catch (e) {
       isApiInitialized.value = false;

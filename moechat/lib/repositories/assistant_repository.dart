@@ -55,13 +55,22 @@ abstract class AssistantRepository {
 
   /// Deletes an assistant.
   Future<void> deleteAssistant(String name);
+
+  /// Fetches the avatar image for an assistant.
+  /// Returns base64 encoded image string.
+  Future<String> fetchAvatar(String name);
+
+  /// Uploads an avatar image for an assistant.
+  /// [data] is base64 encoded image string.
+  Future<void> uploadAvatar(String name, String data);
 }
 
 /// Implementation of [AssistantRepository].
 class AssistantRepositoryImpl implements AssistantRepository {
   final AssistantApiClient _apiClient;
+  final AvatarApiClient _avatarApiClient;
 
-  AssistantRepositoryImpl(this._apiClient);
+  AssistantRepositoryImpl(this._apiClient, this._avatarApiClient);
 
   @override
   Future<List<Assistant>> getAssistants() => _apiClient.fetchAssistants();
@@ -147,4 +156,11 @@ class AssistantRepositoryImpl implements AssistantRepository {
 
   @override
   Future<void> deleteAssistant(String name) => _apiClient.deleteAssistant(name);
+
+  @override
+  Future<String> fetchAvatar(String name) => _avatarApiClient.fetchAvatar(name);
+
+  @override
+  Future<void> uploadAvatar(String name, String data) =>
+      _avatarApiClient.uploadAvatar(name, data);
 }

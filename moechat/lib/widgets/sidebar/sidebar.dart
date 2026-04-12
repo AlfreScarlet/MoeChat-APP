@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../controllers/home_controller.dart';
 import '../../theme/app_theme.dart';
 import '../../models/assistant.dart';
+import '../common/avatar_image.dart';
 
 // Layout constants for consistent avatar positioning.
 // Avatar center = sidebarCollapsedWidth / 2 = 30px from left edge.
@@ -315,10 +316,10 @@ class _SidebarAssistantItemState extends State<_SidebarAssistantItem> {
               // Fixed spacer to position avatar
               const SizedBox(width: avatarLeftInBox),
               // Avatar — fixed size, never moves
-              SizedBox(
-                width: _avatarSize,
-                height: _avatarSize,
-                child: ClipOval(child: _buildAvatar(widget.assistant.avatar)),
+              ReactiveAvatarImage(
+                assistantName: widget.assistant.name,
+                fallbackAvatar: widget.assistant.avatar,
+                size: _avatarSize,
               ),
               // Text — fades out, clipped so it doesn't overflow when collapsed
               Expanded(
@@ -366,16 +367,4 @@ class _SidebarAssistantItemState extends State<_SidebarAssistantItem> {
     );
   }
 
-  Widget _buildAvatar(String avatarPath) {
-    final isValidUrl =
-        avatarPath.isNotEmpty &&
-        (avatarPath.startsWith('http://') || avatarPath.startsWith('https://'));
-    if (!isValidUrl) return Image.asset('assets/logo1.png', fit: BoxFit.cover);
-    return Image.network(
-      avatarPath,
-      fit: BoxFit.cover,
-      errorBuilder: (_, _, _) =>
-          Image.asset('assets/logo1.png', fit: BoxFit.cover),
-    );
-  }
 }

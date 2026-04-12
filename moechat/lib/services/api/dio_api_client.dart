@@ -12,9 +12,15 @@ import 'assistant_parser.dart';
 /// Dio implementation of [AssistantApiClient].
 class DioAssistantApiClient implements AssistantApiClient {
   final dio.Dio _dio;
-  final String? _baseUrl;
+  String? _baseUrl;
 
   DioAssistantApiClient(this._dio, this._baseUrl);
+
+  /// Initializes the client with a base URL.
+  void initialize(String baseUrl) {
+    _baseUrl = baseUrl;
+    _dio.options.baseUrl = baseUrl;
+  }
 
   void _ensureInitialized() {
     if (_baseUrl == null) {
@@ -244,9 +250,15 @@ class DioAssistantApiClient implements AssistantApiClient {
 /// Dio implementation of [AssetsApiClient].
 class DioAssetsApiClient implements AssetsApiClient {
   final dio.Dio _dio;
-  final String? _baseUrl;
+  String? _baseUrl;
 
   DioAssetsApiClient(this._dio, this._baseUrl);
+
+  /// Initializes the client with a base URL.
+  void initialize(String baseUrl) {
+    _baseUrl = baseUrl;
+    _dio.options.baseUrl = baseUrl;
+  }
 
   void _ensureInitialized() {
     if (_baseUrl == null) {
@@ -338,6 +350,97 @@ class DioAssetsApiClient implements AssetsApiClient {
         errorMsg = '$operation 失败: ${e.message}';
     }
     developer.log('❌ $errorMsg', name: 'DioAssetsApiClient', error: e);
+    return ApiException(errorMsg, originalError: e);
+  }
+}
+
+/// Dio implementation of [AvatarApiClient].
+class DioAvatarApiClient implements AvatarApiClient {
+  final dio.Dio _dio;
+  String? _baseUrl;
+
+  DioAvatarApiClient(this._dio, this._baseUrl);
+
+  /// Initializes the client with a base URL.
+  void initialize(String baseUrl) {
+    _baseUrl = baseUrl;
+    _dio.options.baseUrl = baseUrl;
+  }
+
+  void _ensureInitialized() {
+    if (_baseUrl == null) {
+      throw ApiException.notInitialized();
+    }
+  }
+
+  @override
+  Future<String> fetchAvatar(String name) async {
+    _ensureInitialized();
+
+    try {
+      final response = await _dio.post(
+        '/assistant/info/avatar',
+        data: {'name': name},
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final base64Image = data['data'] as String?;
+
+      if (base64Image == null) {
+        throw ApiException('获取头像失败：服务器返回数据为空');
+      }
+
+      developer.log(
+        '✅ 获取头像成功: $name',
+        name: 'DioAvatarApiClient',
+      );
+      return base64Image;
+    } on dio.DioException catch (e) {
+      throw _handleDioError(e, '获取头像');
+    } catch (e, st) {
+      throw ErrorHandler.handle(e, stackTrace: st);
+    }
+  }
+
+  @override
+  Future<void> uploadAvatar(String name, String data) async {
+    _ensureInitialized();
+
+    try {
+      await _dio.post(
+        '/assistant/upload/avatar',
+        data: {'name': name, 'data': data},
+      );
+
+      developer.log(
+        '✅ 上传头像成功: $name',
+        name: 'DioAvatarApiClient',
+      );
+    } on dio.DioException catch (e) {
+      throw _handleDioError(e, '上传头像');
+    } catch (e, st) {
+      throw ErrorHandler.handle(e, stackTrace: st);
+    }
+  }
+
+  ApiException _handleDioError(dio.DioException e, String operation) {
+    String errorMsg;
+    switch (e.type) {
+      case dio.DioExceptionType.connectionTimeout:
+      case dio.DioExceptionType.sendTimeout:
+      case dio.DioExceptionType.receiveTimeout:
+        errorMsg = '$operation 超时，请检查网络连接';
+        break;
+      case dio.DioExceptionType.connectionError:
+        errorMsg = '$operation 连接失败，请检查服务器地址';
+        break;
+      case dio.DioExceptionType.badResponse:
+        errorMsg = '$operation 服务器错误: ${e.response?.statusCode}';
+        break;
+      default:
+        errorMsg = '$operation 失败: ${e.message}';
+    }
+    developer.log('❌ $errorMsg', name: 'DioAvatarApiClient', error: e);
     return ApiException(errorMsg, originalError: e);
   }
 }
