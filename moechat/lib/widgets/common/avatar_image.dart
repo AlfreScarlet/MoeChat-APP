@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/avatar_cache_service.dart';
@@ -12,7 +13,9 @@ import '../../services/avatar_cache_service.dart';
 ///
 /// 如果 [avatar] 是 URL 或 base64，直接使用；
 /// 如果 [assistantName] 不为空，会尝试从 AvatarCacheService 获取缓存的头像
-class AvatarImage extends StatelessWidget {
+///
+/// 使用 StatefulWidget 缓存解码后的图片数据，避免每次重建时重新解码导致的闪烁
+class AvatarImage extends StatefulWidget {
   /// 头像数据（URL 或 base64）
   final String? avatar;
 
@@ -38,42 +41,100 @@ class AvatarImage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // 尝试从缓存获取头像
-    String? effectiveAvatar = avatar;
+  State<AvatarImage> createState() => _AvatarImageState();
+}
+
+class _AvatarImageState extends State<AvatarImage> {
+  /// 缓存解码后的 base64 图片数据
+  Uint8List? _cachedBytes;
+  String? _cachedAvatar;
+
+  @override
+  void initState() {
+    super.initState();
+    _processAvatar();
+  }
+
+  @override
+  void didUpdateWidget(AvatarImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 只有当 avatar 数据变化时才重新处理
+    if (oldWidget.avatar != widget.avatar ||
+        oldWidget.assistantName != widget.assistantName) {
+      _processAvatar();
+    }
+  }
+
+  void _processAvatar() {
+    String? effectiveAvatar = widget.avatar;
     if (effectiveAvatar == null || effectiveAvatar.isEmpty) {
-      if (assistantName != null && assistantName!.isNotEmpty) {
-        effectiveAvatar = AvatarCacheService.to.getAvatar(assistantName!);
+      if (widget.assistantName != null && widget.assistantName!.isNotEmpty) {
+        effectiveAvatar = AvatarCacheService.to.getAvatar(
+          widget.assistantName!,
+        );
       }
     }
+
+    _cachedAvatar = effectiveAvatar;
+
+    if (effectiveAvatar != null &&
+        effectiveAvatar.isNotEmpty &&
+        _isBase64(effectiveAvatar)) {
+      try {
+        String data = effectiveAvatar.trim();
+        // 处理 data:image/xxx;base64, 前缀
+        if (data.startsWith('data:image')) {
+          final commaIndex = data.indexOf(',');
+          if (commaIndex != -1) {
+            data = data.substring(commaIndex + 1);
+          }
+        }
+        _cachedBytes = base64Decode(data);
+      } catch (e) {
+        _cachedBytes = null;
+      }
+    } else {
+      _cachedBytes = null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String? effectiveAvatar = _cachedAvatar;
 
     Widget image;
     if (effectiveAvatar == null || effectiveAvatar.isEmpty) {
       // 使用默认图片
-      image = Image.asset('assets/logo1.png', fit: fit);
-    } else if (_isBase64(effectiveAvatar)) {
-      // 显示 base64 图片
-      image = _buildBase64Image(effectiveAvatar);
+      image = Image.asset('assets/logo1.png', fit: widget.fit);
+    } else if (_cachedBytes != null) {
+      // 使用缓存的解码数据，gaplessPlayback 防止闪烁
+      image = Image.memory(
+        _cachedBytes!,
+        fit: widget.fit,
+        gaplessPlayback: true,
+        errorBuilder: (_, _, _) =>
+            Image.asset('assets/logo1.png', fit: widget.fit),
+      );
     } else if (_isUrl(effectiveAvatar)) {
       // 显示网络图片
       image = Image.network(
         effectiveAvatar,
-        fit: fit,
+        fit: widget.fit,
         errorBuilder: (_, _, _) =>
-            Image.asset('assets/logo1.png', fit: fit),
+            Image.asset('assets/logo1.png', fit: widget.fit),
       );
     } else {
       // 未知格式，使用默认图片
-      image = Image.asset('assets/logo1.png', fit: fit);
+      image = Image.asset('assets/logo1.png', fit: widget.fit);
     }
 
-    if (circular) {
+    if (widget.circular) {
       return ClipOval(
-        child: SizedBox(width: size, height: size, child: image),
+        child: SizedBox(width: widget.size, height: widget.size, child: image),
       );
     }
 
-    return SizedBox(width: size, height: size, child: image);
+    return SizedBox(width: widget.size, height: widget.size, child: image);
   }
 
   /// 检查是否为 base64 数据
@@ -92,31 +153,6 @@ class AvatarImage extends StatelessWidget {
   /// 检查是否为 URL
   bool _isUrl(String str) {
     return str.startsWith('http://') || str.startsWith('https://');
-  }
-
-  /// 构建 base64 图片
-  Widget _buildBase64Image(String base64Data) {
-    try {
-      String data = base64Data.trim();
-
-      // 处理 data:image/xxx;base64, 前缀
-      if (data.startsWith('data:image')) {
-        final commaIndex = data.indexOf(',');
-        if (commaIndex != -1) {
-          data = data.substring(commaIndex + 1);
-        }
-      }
-
-      final bytes = base64Decode(data);
-      return Image.memory(
-        bytes,
-        fit: fit,
-        errorBuilder: (_, _, _) =>
-            Image.asset('assets/logo1.png', fit: fit),
-      );
-    } catch (e) {
-      return Image.asset('assets/logo1.png', fit: fit);
-    }
   }
 }
 
@@ -155,10 +191,10 @@ class ReactiveAvatarImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final service = AvatarCacheService.to;
-      
+
       // 只读取缓存，不触发任何获取逻辑
       final cachedAvatar = service.getCachedAvatar(assistantName);
-      
+
       // 有缓存显示缓存，没有显示默认头像
       return AvatarImage(
         avatar: cachedAvatar ?? fallbackAvatar,
