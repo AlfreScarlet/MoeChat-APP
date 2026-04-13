@@ -540,6 +540,33 @@ class AvatarPickerButton extends StatefulWidget {
 
 class _AvatarPickerButtonState extends State<AvatarPickerButton> {
   bool _hovered = false;
+  Uint8List? _cachedBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    _processAvatar();
+  }
+
+  @override
+  void didUpdateWidget(AvatarPickerButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.avatarBase64 != widget.avatarBase64) {
+      _processAvatar();
+    }
+  }
+
+  void _processAvatar() {
+    if (widget.avatarBase64 != null && widget.avatarBase64!.isNotEmpty) {
+      try {
+        _cachedBytes = base64Decode(widget.avatarBase64!);
+      } catch (_) {
+        _cachedBytes = null;
+      }
+    } else {
+      _cachedBytes = null;
+    }
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -588,18 +615,15 @@ class _AvatarPickerButtonState extends State<AvatarPickerButton> {
   }
 
   Widget _buildImage() {
-    if (_hasImage) {
-      try {
-        return Image.memory(
-          base64Decode(widget.avatarBase64!),
-          fit: BoxFit.cover,
-          width: 96,
-          height: 96,
-          errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
-        );
-      } catch (_) {
-        return _buildPlaceholder();
-      }
+    if (_cachedBytes != null) {
+      return Image.memory(
+        _cachedBytes!,
+        fit: BoxFit.cover,
+        width: 96,
+        height: 96,
+        gaplessPlayback: true,
+        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+      );
     }
     return _buildPlaceholder();
   }

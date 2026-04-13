@@ -35,6 +35,9 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // 禁用代码压缩和混淆，确保网络请求正常工作
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
