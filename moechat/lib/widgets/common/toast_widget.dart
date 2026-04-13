@@ -94,7 +94,8 @@ class _ToastOverlayWidgetState extends State<ToastOverlayWidget>
 
   @override
   Widget build(BuildContext context) {
-    final topOffset = 16.0 + widget.index * 72.0;
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+    final topOffset = statusBarHeight + 16.0 + widget.index * 72.0;
 
     return Positioned(
       top: topOffset,
@@ -105,54 +106,58 @@ class _ToastOverlayWidgetState extends State<ToastOverlayWidget>
           opacity: _fadeAnimation,
           child: Material(
             color: Colors.transparent,
-            child: Container(
-              width: 300,
-              padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border(left: BorderSide(color: widget.color, width: 3)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Icon(widget.icon, color: widget.color, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          widget.title,
-                          style: AppTheme.cjkStyle(
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: AppTheme.text,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          widget.message,
-                          style: AppTheme.cjkStyle(
-                            fontSize: 11,
-                            color: AppTheme.textSecondary,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+            child: GestureDetector(
+              onTap: widget.onDismiss,
+              behavior: HitTestBehavior.translucent,
+              child: Container(
+                width: 300,
+                padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border(left: BorderSide(color: widget.color, width: 3)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  _buildCloseButton(),
-                ],
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(widget.icon, color: widget.color, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.title,
+                            style: AppTheme.cjkStyle(
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: AppTheme.text,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.message,
+                            style: AppTheme.cjkStyle(
+                              fontSize: 11,
+                              color: AppTheme.textSecondary,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    _buildCloseButton(),
+                  ],
+                ),
               ),
             ),
           ),

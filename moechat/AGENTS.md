@@ -66,6 +66,7 @@ lib/
 │   │   └── dio_api_client.dart        # Dio implementations
 │   ├── api_service.dart           # Legacy API service (main implementation for most endpoints)
 │   ├── audio_service.dart         # Audio playback (flutter_soloud) - 32kHz PCM streaming
+│   ├── avatar_cache_service.dart  # Avatar image caching
 │   ├── chat_storage_service.dart  # Chat history persistence via get_storage
 │   ├── loading_service.dart       # Loading indicators and toast notifications
 │   ├── recording_service.dart     # Audio recording (record package) - 16kHz PCM streaming
@@ -78,10 +79,16 @@ lib/
 │       ├── assistant_crud_mixin.dart
 │       └── socket_frame_handler_mixin.dart
 ├── pages/                         # UI pages
-│   └── home_page.dart             # Main application page with three-panel layout
+│   ├── home_page.dart             # Main desktop application page with three-panel layout
+│   └── mobile/                    # Mobile-specific pages
+│       ├── mobile_home_page.dart
+│       ├── assistants_page.dart
+│       ├── assistant_detail_page.dart
+│       ├── chat_page.dart
+│       └── settings_page.dart
 ├── widgets/                       # UI components organized by feature
 │   ├── chat/                      # Chat area components (chat_area, chat_bubble, chat_input_bar, etc.)
-│   ├── common/                    # Shared widgets (form_widgets, loading_dialog, toast_widget)
+│   ├── common/                    # Shared widgets (form_widgets, loading_dialog, toast_widget, avatar_image)
 │   ├── detail/                    # Assistant detail panel widgets (assets_section, gsv_settings, etc.)
 │   ├── modals/                    # Dialogs and modals (edit_assistant_modal, settings_modal)
 │   └── sidebar/                   # Sidebar components
@@ -397,6 +404,8 @@ The application communicates with a backend server via these HTTP endpoints:
 | `/assistant/info/add` | POST | Create new assistant |
 | `/assistant/info/update` | POST | Update assistant |
 | `/assistant/info/delete` | POST | Delete assistant |
+| `/assistant/info/avatar` | POST | Get assistant avatar (base64) |
+| `/assistant/upload/avatar` | POST | Upload assistant avatar |
 | `/assistant/assets/check` | POST | Check if resources need update |
 | `/assistant/assets/download` | POST | Download resource ZIP |
 | `/assistant/assets/upload` | POST | Upload resource ZIP |
@@ -422,10 +431,20 @@ The application communicates with a backend server via these HTTP endpoints:
 - Uses flutter_soloud with Windows-specific audio backends
 - All features fully supported
 
+### Mobile (Android/iOS)
+
+- Supported via adaptive UI (`MobileHomePage` vs `HomePage`)
+- Mobile-specific pages in `lib/pages/mobile/`
+- Platform detection in `main.dart`:
+  ```dart
+  home: (Platform.isAndroid || Platform.isIOS)
+      ? const MobileHomePage()
+      : const HomePage(),
+  ```
+
 ### Other Platforms
 
 - **macOS/Linux**: Should work but may require platform-specific setup
-- **Android/iOS**: Supported but not primary focus
 - **Web**: Limited support due to socket and audio constraints
 
 ## Troubleshooting
@@ -454,6 +473,7 @@ The application communicates with a backend server via these HTTP endpoints:
 | `freezed` | Immutable data classes with code generation |
 | `file_picker` | Native file selection dialogs |
 | `archive` | ZIP compression/decompression |
+| `flutter_list_view` | Enhanced ListView with scroll-to-index support |
 | `wheatley` | Property-based testing framework |
 | `mockito` | Mocking framework for tests |
 
