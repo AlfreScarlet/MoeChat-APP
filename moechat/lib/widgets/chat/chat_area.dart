@@ -11,17 +11,21 @@ import 'chat_input_bar.dart';
 /// in a vertical column layout. Reactively updates when the selected
 /// assistant changes via [HomeController].
 class ChatArea extends StatelessWidget {
-  const ChatArea({super.key});
+  /// Whether to show the chat header.
+  /// Set to false for mobile layouts where the header is in AppBar.
+  final bool showHeader;
+
+  const ChatArea({super.key, this.showHeader = true});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: AppTheme.background,
-      child: const Column(
+      child: Column(
         children: [
-          ChatHeader(),
-          Expanded(child: ChatMessageList()),
-          ChatInputBar(),
+          if (showHeader) const ChatHeader(),
+          const Expanded(child: ChatMessageList()),
+          const ChatInputBar(),
         ],
       ),
     );

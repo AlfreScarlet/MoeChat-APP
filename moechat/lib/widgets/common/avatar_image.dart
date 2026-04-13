@@ -129,7 +129,9 @@ class _AvatarImageState extends State<AvatarImage> {
     }
 
     if (widget.circular) {
-      return ClipOval(
+      // 圆角矩形头像（带弧度）
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(widget.size * 0.25),
         child: SizedBox(width: widget.size, height: widget.size, child: image),
       );
     }

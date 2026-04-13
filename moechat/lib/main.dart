@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ import 'controllers/home_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'services/chat_storage_service.dart';
 import 'pages/home_page.dart';
+import 'pages/mobile/mobile_home_page.dart';
 import 'theme/app_theme.dart';
 
 /// Global JSON encoder with indentation for debug logging.
@@ -55,7 +57,9 @@ class MoeChatApp extends StatelessWidget {
           child: child!,
         );
       },
-      home: const HomePage(),
+      home: (Platform.isAndroid || Platform.isIOS)
+          ? const MobileHomePage()
+          : const HomePage(),
     );
   }
 }

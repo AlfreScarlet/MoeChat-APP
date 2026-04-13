@@ -46,7 +46,7 @@ class ChatBubble extends StatelessWidget {
         ReactiveAvatarImage(
           assistantName: assistant?.name ?? '',
           fallbackAvatar: assistant?.avatar,
-          size: 32,
+          size: 46,
         ),
         const SizedBox(width: 10),
         ConstrainedBox(
