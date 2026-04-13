@@ -167,7 +167,7 @@ class _SettingsModalState extends State<SettingsModal>
   Widget _buildBody() {
     return Scrollbar(
       controller: _scrollController,
-      thumbVisibility: true,
+      thumbVisibility: false,
       child: SingleChildScrollView(
         controller: _scrollController,
         padding: const EdgeInsets.all(20),

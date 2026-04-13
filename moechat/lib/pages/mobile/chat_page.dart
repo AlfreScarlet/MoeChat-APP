@@ -20,6 +20,7 @@ class ChatPage extends StatelessWidget {
     final socketService = Get.find<SocketService>();
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,  // 确保键盘弹出时布局上移至最新消息可见
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: 56,

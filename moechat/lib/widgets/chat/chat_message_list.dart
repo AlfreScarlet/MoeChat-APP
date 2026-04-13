@@ -13,6 +13,7 @@ import 'chat_bubble.dart';
 /// - 在顶部插入数据时不自动滚动（保持位置）
 /// - 高效的列表项复用
 /// - 自动滚动到底部（当新消息到达时）
+/// - 使用 reverse 模式，键盘弹出时最新消息自然可见
 class ChatMessageList extends StatefulWidget {
   const ChatMessageList({super.key});
 
@@ -28,6 +29,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
   void initState() {
     super.initState();
     _listController = FlutterListViewController();
+
     // 监听消息列表变化，自动滚动到底部
     ever(_controller.messages, _onMessagesChanged);
   }
@@ -51,17 +53,13 @@ class _ChatMessageListState extends State<ChatMessageList> {
     }
   }
 
-  /// 滚动到底部
+  /// 滚动到底部（实际上是顶部，因为 reverse: true）
   void _scrollToBottom() {
     final messages = _controller.messages;
     if (messages.isEmpty) return;
 
-    // 使用 jumpToIndex 跳转到最新消息
-    // 使用 smooth: true 实现平滑滚动
-    _listController.sliverController.jumpToIndex(
-      messages.length - 1,
-      offsetBasedOnBottom: true,
-    );
+    // reverse: true 时，最新消息在索引 0，滚动到 0 就是到底部
+    _listController.sliverController.jumpToIndex(0);
   }
 
   @override
@@ -81,17 +79,24 @@ class _ChatMessageListState extends State<ChatMessageList> {
         );
       }
 
+      // 反转消息列表，配合 reverse: true 实现最新消息在底部
+      final reversedMessages = messages.reversed.toList();
+
       return Scrollbar(
         controller: _listController,
-        thumbVisibility: true,
+        thumbVisibility: false,
         child: FlutterListView(
           controller: _listController,
+          // 反向列表：从底部开始渲染，解决键盘弹出遮挡问题
+          reverse: true,
           delegate: FlutterListViewDelegate(
             (BuildContext context, int index) {
-              final message = messages[index];
-              // 添加间距：顶部和底部需要 padding，消息之间有间距
-              final isFirst = index == 0;
-              final isLast = index == messages.length - 1;
+              // index 是反转后的索引，0 对应最新消息
+              final message = reversedMessages[index];
+              final actualIndex = messages.length - 1 - index;
+              final isFirst = actualIndex == 0;
+              final isLast = actualIndex == messages.length - 1;
+
               return Padding(
                 padding: EdgeInsets.only(
                   top: isFirst ? 20 : 0,
@@ -110,13 +115,15 @@ class _ChatMessageListState extends State<ChatMessageList> {
                 ),
               );
             },
-            childCount: messages.length,
+            childCount: reversedMessages.length,
             // 使用消息 ID 作为 key，确保列表项正确识别
-            onItemKey: (index) => messages[index].id,
-            // 禁用缓存，保持消息状态（聊天消息通常需要保持状态）
+            onItemKey: (index) => reversedMessages[index].id,
+            // 禁用缓存，保持消息状态
             disableCacheItems: true,
-            // 保持最后一个消息可见（用于自动滚动）
-            keepPosition: false,
+            // 保持位置，插入新消息时不自动滚动
+            keepPosition: true,
+            // 第一个条目对齐到结束位置（底部）
+            firstItemAlign: FirstItemAlign.end,
           ),
         ),
       );

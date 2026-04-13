@@ -43,6 +43,9 @@ class HomeController extends GetxController
   final isCallActive = false.obs;
   final isSidebarCollapsed = false.obs;
 
+  // 输入框焦点状态（用于移动端键盘弹出时滚动消息列表）
+  final isInputFocused = false.obs;
+
   // 通话时长状态
   final callDuration = 0.obs; // 通话时长（秒）
   Timer? _callDurationTimer;

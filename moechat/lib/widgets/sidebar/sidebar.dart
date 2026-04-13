@@ -237,7 +237,7 @@ class _SidebarListViewState extends State<_SidebarListView> {
 
       return Scrollbar(
         controller: _scrollController,
-        thumbVisibility: true,
+        thumbVisibility: false,
         child: ListView.builder(
           controller: _scrollController,
           padding: const EdgeInsets.symmetric(vertical: 4),

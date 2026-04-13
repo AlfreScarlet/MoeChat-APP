@@ -34,10 +34,18 @@ class _ChatInputBarState extends State<ChatInputBar>
       vsync: this,
       duration: AppTheme.callPulseDuration,
     );
+    // 监听焦点变化，通知 Controller
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    final controller = Get.find<HomeController>();
+    controller.isInputFocused.value = _focusNode.hasFocus;
   }
 
   @override
   void dispose() {
+    _focusNode.removeListener(_onFocusChange);
     _pulseController.dispose();
     _textController.dispose();
     _focusNode.dispose();

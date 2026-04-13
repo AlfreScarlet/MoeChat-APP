@@ -512,7 +512,7 @@ class _EditAssistantModalState extends State<EditAssistantModal>
   Widget _buildBody() {
     return Scrollbar(
       controller: _scrollController,
-      thumbVisibility: true,
+      thumbVisibility: false,
       child: SingleChildScrollView(
         controller: _scrollController,
         padding: const EdgeInsets.all(20),

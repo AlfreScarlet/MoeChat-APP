@@ -45,7 +45,7 @@ class _DetailPanelState extends State<DetailPanel> {
           Expanded(
             child: Scrollbar(
               controller: _scrollController,
-              thumbVisibility: true,
+              thumbVisibility: false,
               child: SingleChildScrollView(
                 controller: _scrollController,
                 padding: const EdgeInsets.all(16),
